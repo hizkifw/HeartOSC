@@ -1,13 +1,13 @@
 package red.kitsu.heartosc
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.*
 import android.bluetooth.le.*
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,15 +34,8 @@ class HeartRateMonitorManager(private val context: Context) {
         private const val MAX_RECONNECT_DELAY_MS = 30000L
         private const val MAX_RECONNECT_ATTEMPTS = 10
 
-        // Required permissions
-        val REQUIRED_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arrayOf(
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.POST_NOTIFICATIONS
-            )
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        // Required Bluetooth permissions (notifications are optional)
+        val REQUIRED_BLUETOOTH_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             arrayOf(
                 Manifest.permission.BLUETOOTH_SCAN,
                 Manifest.permission.BLUETOOTH_CONNECT,
@@ -54,6 +47,13 @@ class HeartRateMonitorManager(private val context: Context) {
                 Manifest.permission.BLUETOOTH_ADMIN,
                 Manifest.permission.ACCESS_FINE_LOCATION
             )
+        }
+
+        // All permissions including optional ones (for onboarding)
+        val REQUIRED_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            REQUIRED_BLUETOOTH_PERMISSIONS + Manifest.permission.POST_NOTIFICATIONS
+        } else {
+            REQUIRED_BLUETOOTH_PERMISSIONS
         }
     }
 
@@ -105,7 +105,7 @@ class HeartRateMonitorManager(private val context: Context) {
     )
 
     private val scanCallback = object : ScanCallback() {
-        @SuppressLint("MissingPermission")
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             result?.device?.let { device ->
                 if (!_discoveredDevices.value.contains(device)) {
@@ -123,7 +123,7 @@ class HeartRateMonitorManager(private val context: Context) {
     }
 
     private val gattCallback = object : BluetoothGattCallback() {
-        @SuppressLint("MissingPermission")
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
@@ -148,7 +148,7 @@ class HeartRateMonitorManager(private val context: Context) {
             }
         }
 
-        @SuppressLint("MissingPermission")
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Log.d(TAG, "Services discovered")
@@ -223,7 +223,7 @@ class HeartRateMonitorManager(private val context: Context) {
     }
 
     fun checkPermissions(): Boolean {
-        return REQUIRED_PERMISSIONS.all { permission ->
+        return REQUIRED_BLUETOOTH_PERMISSIONS.all { permission ->
             ActivityCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
         }
     }
@@ -232,7 +232,7 @@ class HeartRateMonitorManager(private val context: Context) {
         return bluetoothAdapter?.isEnabled == true
     }
 
-    @SuppressLint("MissingPermission")
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.ACCESS_FINE_LOCATION])
     fun startScan() {
         if (!checkPermissions()) {
             Log.e(TAG, "Missing Bluetooth permissions")
@@ -261,7 +261,7 @@ class HeartRateMonitorManager(private val context: Context) {
         Log.d(TAG, "Started scanning for heart rate devices")
     }
 
-    @SuppressLint("MissingPermission")
+    @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
     fun stopScan() {
         if (!checkPermissions()) return
 
@@ -270,7 +270,7 @@ class HeartRateMonitorManager(private val context: Context) {
         Log.d(TAG, "Stopped scanning")
     }
 
-    @SuppressLint("MissingPermission")
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     fun connectToDevice(device: BluetoothDevice) {
         if (!checkPermissions()) {
             Log.e(TAG, "Missing Bluetooth permissions")
@@ -289,7 +289,7 @@ class HeartRateMonitorManager(private val context: Context) {
         Log.d(TAG, "Connecting to device: ${device.name ?: "Unknown"}")
     }
 
-    @SuppressLint("MissingPermission")
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun attemptReconnect() {
         val device = lastConnectedDevice
         if (device == null) {
@@ -326,6 +326,7 @@ class HeartRateMonitorManager(private val context: Context) {
         bluetoothGatt = device.connectGatt(context, false, gattCallback)
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun scheduleReconnect() {
         cancelReconnect()
 
@@ -337,7 +338,6 @@ class HeartRateMonitorManager(private val context: Context) {
         Log.d(TAG, "Scheduling reconnection in ${delay}ms")
 
         reconnectJob = reconnectionScope.launch {
-            delay(delay)
             attemptReconnect()
         }
     }
@@ -347,8 +347,8 @@ class HeartRateMonitorManager(private val context: Context) {
         reconnectJob = null
     }
 
-    @SuppressLint("MissingPermission")
-    fun disconnect() {
+@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+fun disconnect() {
         if (!checkPermissions()) return
 
         isManualDisconnect = true // Mark as manual disconnect
@@ -374,7 +374,7 @@ class HeartRateMonitorManager(private val context: Context) {
         Log.d(TAG, "Manually disconnected")
     }
 
-    @SuppressLint("MissingPermission")
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun enableNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
         if (!checkPermissions()) return
 
@@ -400,7 +400,7 @@ class HeartRateMonitorManager(private val context: Context) {
         }
     }
 
-    @SuppressLint("MissingPermission")
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun disableNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
         if (!checkPermissions()) return
 
@@ -502,6 +502,7 @@ class HeartRateMonitorManager(private val context: Context) {
         )
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     fun cleanup() {
         cancelReconnect()
         stopScan()

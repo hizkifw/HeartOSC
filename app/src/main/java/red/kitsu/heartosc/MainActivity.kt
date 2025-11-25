@@ -1,5 +1,6 @@
 package red.kitsu.heartosc
 
+import android.annotation.SuppressLint
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.content.ComponentName
@@ -64,6 +65,8 @@ class MainActivity : ComponentActivity() {
             // Set disconnect callback
             heartRateService.onDisconnectRequested = {
                 Log.d("MainActivity", "Disconnect requested from notification")
+                // Permission already granted (service only runs when connected)
+                @SuppressLint("MissingPermission")
                 viewModelInstance?.disconnect()
             }
             serviceBound = true
@@ -95,8 +98,9 @@ class MainActivity : ComponentActivity() {
                     // Only auto-request permissions if onboarding is complete
                     if (!showOnboarding) {
                         if (!permissionsGranted) {
+                            // Only request Bluetooth permissions (notifications are optional)
                             requestPermissionsLauncher.launch(
-                                HeartRateMonitorManager.REQUIRED_PERMISSIONS
+                                HeartRateMonitorManager.REQUIRED_BLUETOOTH_PERMISSIONS
                             )
                         }
 
@@ -199,6 +203,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("deviceList") {
+                            // Permission is checked before navigation (permissionsGranted flag in MainScreen)
+                            @SuppressLint("MissingPermission")
                             DeviceListScreen(
                                 viewModel = viewModel,
                                 onDeviceSelected = {

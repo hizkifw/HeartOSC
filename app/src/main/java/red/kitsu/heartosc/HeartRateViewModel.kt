@@ -1,7 +1,9 @@
 package red.kitsu.heartosc
 
+import android.Manifest
 import android.app.Application
 import android.bluetooth.BluetoothDevice
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.combine
@@ -114,24 +116,28 @@ class HeartRateViewModel(application: Application) : AndroidViewModel(applicatio
         return heartRateManager.isBluetoothEnabled()
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.ACCESS_FINE_LOCATION])
     fun startScan() {
         viewModelScope.launch {
             heartRateManager.startScan()
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
     fun stopScan() {
         viewModelScope.launch {
             heartRateManager.stopScan()
         }
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     fun connectToDevice(device: BluetoothDevice) {
         viewModelScope.launch {
             heartRateManager.connectToDevice(device)
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun disconnect() {
         viewModelScope.launch {
             heartRateManager.disconnect()
@@ -162,6 +168,7 @@ class HeartRateViewModel(application: Application) : AndroidViewModel(applicatio
         settingsManager.setHeartbeatPulseParam(param)
     }
 
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     override fun onCleared() {
         super.onCleared()
         pulseGenerator.cleanup()

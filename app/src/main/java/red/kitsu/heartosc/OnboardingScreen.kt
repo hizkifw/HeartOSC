@@ -122,7 +122,7 @@ fun OnboardingScreen(
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        notificationPermissionGranted = granted || !hasNotificationPermission()
+        notificationPermissionGranted = granted
         // Auto-advance after granting or denying
         scope.launch {
             kotlinx.coroutines.delay(500)
@@ -189,6 +189,11 @@ fun OnboardingScreen(
                             } else {
                                 notificationPermissionGranted = true
                             }
+                        },
+                        onSkip = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                            }
                         }
                     )
                     3 -> OscSetupPage(
@@ -247,7 +252,7 @@ fun OnboardingScreen(
                     },
                     enabled = when (pagerState.currentPage) {
                         1 -> bluetoothPermissionsGranted && bluetoothEnabledState
-                        2 -> notificationPermissionGranted || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+                        2 -> true // Always allow advancing from notification page (can skip)
                         3 -> hostText.isNotBlank() && portText.toIntOrNull()?.let { it in 1..65535 } == true
                         else -> true
                     }
@@ -392,7 +397,8 @@ fun BluetoothPermissionPage(
 @Composable
 fun NotificationPermissionPage(
     isGranted: Boolean,
-    onRequestPermission: () -> Unit
+    onRequestPermission: () -> Unit,
+    onSkip: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -430,7 +436,7 @@ fun NotificationPermissionPage(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        if (!isGranted) {
+        if (!isGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Button(
                 onClick = onRequestPermission,
                 modifier = Modifier.fillMaxWidth()
@@ -441,12 +447,12 @@ fun NotificationPermissionPage(
             Spacer(modifier = Modifier.height(8.dp))
 
             TextButton(
-                onClick = onRequestPermission,
+                onClick = onSkip,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.onboarding_button_skip))
             }
-        } else {
+        } else if (isGranted || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(

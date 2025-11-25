@@ -1,5 +1,6 @@
 package red.kitsu.heartosc
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -148,6 +149,8 @@ fun MainScreen(
             Button(
                 onClick = {
                     if (isConnected) {
+                        // Button only enabled when permissionsGranted is true
+                        @SuppressLint("MissingPermission")
                         viewModel.disconnect()
                     } else {
                         onNavigateToDeviceList()

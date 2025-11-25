@@ -1,7 +1,9 @@
 package red.kitsu.heartosc
 
 import android.annotation.SuppressLint
+import android.Manifest
 import android.bluetooth.BluetoothDevice
+import androidx.annotation.RequiresPermission
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
-@SuppressLint("MissingPermission")
+@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceListScreen(
@@ -26,10 +28,14 @@ fun DeviceListScreen(
     val discoveredDevices by viewModel.discoveredDevices.collectAsState()
     val scanningState by viewModel.scanningState.collectAsState()
 
+    // Permission already required by parent composable
+    @SuppressLint("MissingPermission")
     LaunchedEffect(Unit) {
         viewModel.startScan()
     }
 
+    // Permission already required by parent composable
+    @SuppressLint("MissingPermission")
     DisposableEffect(Unit) {
         onDispose {
             viewModel.stopScan()
@@ -104,9 +110,12 @@ fun DeviceListScreen(
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     items(discoveredDevices) { device ->
+                        // Permission already required by parent composable
+                        @SuppressLint("MissingPermission")
                         DeviceListItem(
                             device = device,
                             onClick = {
+                                @SuppressLint("MissingPermission")
                                 viewModel.connectToDevice(device)
                                 onDeviceSelected()
                             }
@@ -119,7 +128,7 @@ fun DeviceListScreen(
     }
 }
 
-@SuppressLint("MissingPermission")
+@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 @Composable
 fun DeviceListItem(
     device: BluetoothDevice,
