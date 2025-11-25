@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @SuppressLint("MissingPermission")
@@ -38,12 +39,12 @@ fun DeviceListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Select Heart Rate Monitor") },
+                title = { Text(stringResource(R.string.device_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.desc_back)
                         )
                     }
                 },
@@ -80,17 +81,17 @@ fun DeviceListScreen(
                             CircularProgressIndicator()
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "Scanning for heart rate monitors...",
+                                text = stringResource(R.string.device_scanning),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         } else {
                             Text(
-                                text = "No devices found",
+                                text = stringResource(R.string.device_no_devices),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Make sure your heart rate monitor is turned on and nearby",
+                                text = stringResource(R.string.device_help_text),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
@@ -134,7 +135,7 @@ fun DeviceListItem(
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Text(
-                text = device.name ?: "Unknown Device",
+                text = device.name ?: stringResource(R.string.device_unknown),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )

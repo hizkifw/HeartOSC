@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,7 +31,8 @@ fun MainScreen(
     val heartbeatPulse by viewModel.heartbeatPulse.collectAsState()
 
     val isConnected = connectionState is HeartRateMonitorManager.ConnectionState.Connected ||
-            connectionState is HeartRateMonitorManager.ConnectionState.Discovering
+            connectionState is HeartRateMonitorManager.ConnectionState.Discovering ||
+            connectionState is HeartRateMonitorManager.ConnectionState.Reconnecting
 
     var showMenu by remember { mutableStateOf(false) }
 
@@ -44,12 +46,12 @@ fun MainScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("HeartOSC") },
+                title = { Text(stringResource(R.string.main_title)) },
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More options"
+                            contentDescription = stringResource(R.string.desc_more_options)
                         )
                     }
                     DropdownMenu(
@@ -57,14 +59,14 @@ fun MainScreen(
                         onDismissRequest = { showMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Settings") },
+                            text = { Text(stringResource(R.string.common_settings)) },
                             onClick = {
                                 showMenu = false
                                 onNavigateToSettings()
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("About") },
+                            text = { Text(stringResource(R.string.common_about)) },
                             onClick = {
                                 showMenu = false
                                 onNavigateToAbout()
@@ -102,7 +104,7 @@ fun MainScreen(
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "BPM",
+                    text = stringResource(R.string.main_unit_bpm),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Normal,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
@@ -115,10 +117,14 @@ fun MainScreen(
             // Connection Status
             Text(
                 text = when (connectionState) {
-                    is HeartRateMonitorManager.ConnectionState.Disconnected -> "Not connected"
-                    is HeartRateMonitorManager.ConnectionState.Connecting -> "Connecting..."
-                    is HeartRateMonitorManager.ConnectionState.Connected -> "Connected"
-                    is HeartRateMonitorManager.ConnectionState.Discovering -> "Discovering services..."
+                    is HeartRateMonitorManager.ConnectionState.Disconnected -> stringResource(R.string.status_not_connected)
+                    is HeartRateMonitorManager.ConnectionState.Connecting -> stringResource(R.string.status_connecting)
+                    is HeartRateMonitorManager.ConnectionState.Connected -> stringResource(R.string.status_connected)
+                    is HeartRateMonitorManager.ConnectionState.Discovering -> stringResource(R.string.status_discovering)
+                    is HeartRateMonitorManager.ConnectionState.Reconnecting -> {
+                        val state = connectionState as HeartRateMonitorManager.ConnectionState.Reconnecting
+                        stringResource(R.string.status_reconnecting, state.attempt, state.maxAttempts)
+                    }
                     is HeartRateMonitorManager.ConnectionState.Error -> {
                         (connectionState as HeartRateMonitorManager.ConnectionState.Error).message
                     }
@@ -130,6 +136,8 @@ fun MainScreen(
                     is HeartRateMonitorManager.ConnectionState.Connected,
                     is HeartRateMonitorManager.ConnectionState.Discovering ->
                         MaterialTheme.colorScheme.primary
+                    is HeartRateMonitorManager.ConnectionState.Reconnecting ->
+                        MaterialTheme.colorScheme.tertiary
                     else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 }
             )
@@ -151,7 +159,7 @@ fun MainScreen(
                     .height(56.dp)
             ) {
                 Text(
-                    text = if (isConnected) "Disconnect" else "Connect to HRM",
+                    text = if (isConnected) stringResource(R.string.main_button_disconnect) else stringResource(R.string.main_button_connect),
                     fontSize = 18.sp
                 )
             }
@@ -160,8 +168,8 @@ fun MainScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = when {
-                        !permissionsGranted -> "Bluetooth permissions required"
-                        !bluetoothEnabled -> "Bluetooth must be enabled"
+                        !permissionsGranted -> stringResource(R.string.error_bluetooth_permissions)
+                        !bluetoothEnabled -> stringResource(R.string.error_bluetooth_disabled)
                         else -> ""
                     },
                     style = MaterialTheme.typography.bodyMedium,

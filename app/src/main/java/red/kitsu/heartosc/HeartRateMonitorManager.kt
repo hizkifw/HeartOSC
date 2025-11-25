@@ -12,6 +12,11 @@ import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 
 class HeartRateMonitorManager(private val context: Context) {
@@ -23,6 +28,11 @@ class HeartRateMonitorManager(private val context: Context) {
         val HEART_RATE_SERVICE_UUID: UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb")
         val HEART_RATE_MEASUREMENT_CHAR_UUID: UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb")
         val CLIENT_CHARACTERISTIC_CONFIG_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+
+        // Reconnection settings
+        private const val INITIAL_RECONNECT_DELAY_MS = 1000L
+        private const val MAX_RECONNECT_DELAY_MS = 30000L
+        private const val MAX_RECONNECT_ATTEMPTS = 10
 
         // Required permissions
         val REQUIRED_PERMISSIONS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -54,6 +64,13 @@ class HeartRateMonitorManager(private val context: Context) {
     private var bluetoothGatt: BluetoothGatt? = null
     private var heartRateCharacteristic: BluetoothGattCharacteristic? = null
 
+    // Reconnection state
+    private var lastConnectedDevice: BluetoothDevice? = null
+    private var reconnectJob: Job? = null
+    private var reconnectAttempts = 0
+    private var isManualDisconnect = false
+    private val reconnectionScope = CoroutineScope(Dispatchers.IO)
+
     private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
     val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
 
@@ -77,6 +94,7 @@ class HeartRateMonitorManager(private val context: Context) {
         object Connecting : ConnectionState()
         object Connected : ConnectionState()
         object Discovering : ConnectionState()
+        data class Reconnecting(val attempt: Int, val maxAttempts: Int) : ConnectionState()
         data class Error(val message: String) : ConnectionState()
     }
 
@@ -111,12 +129,21 @@ class HeartRateMonitorManager(private val context: Context) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     Log.d(TAG, "Connected to GATT server")
                     _connectionState.value = ConnectionState.Connected
+                    reconnectAttempts = 0 // Reset reconnect attempts on successful connection
                     gatt?.discoverServices()
                 }
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    Log.d(TAG, "Disconnected from GATT server")
-                    _connectionState.value = ConnectionState.Disconnected
+                    Log.d(TAG, "Disconnected from GATT server (status: $status, manual: $isManualDisconnect)")
                     _heartRate.value = null
+
+                    // Only attempt reconnection if this wasn't a manual disconnect
+                    if (!isManualDisconnect && lastConnectedDevice != null) {
+                        Log.d(TAG, "Unexpected disconnection, will attempt to reconnect")
+                        _connectionState.value = ConnectionState.Reconnecting(reconnectAttempts + 1, MAX_RECONNECT_ATTEMPTS)
+                        scheduleReconnect()
+                    } else {
+                        _connectionState.value = ConnectionState.Disconnected
+                    }
                 }
             }
         }
@@ -252,16 +279,80 @@ class HeartRateMonitorManager(private val context: Context) {
         }
 
         stopScan()
+        cancelReconnect() // Cancel any pending reconnection attempts
+        isManualDisconnect = false // Reset manual disconnect flag
         _connectionState.value = ConnectionState.Connecting
 
         bluetoothGatt?.close()
         bluetoothGatt = device.connectGatt(context, false, gattCallback)
+        lastConnectedDevice = device // Store device for reconnection
         Log.d(TAG, "Connecting to device: ${device.name ?: "Unknown"}")
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun attemptReconnect() {
+        val device = lastConnectedDevice
+        if (device == null) {
+            Log.e(TAG, "Cannot reconnect: no previous device")
+            _connectionState.value = ConnectionState.Disconnected
+            return
+        }
+
+        if (!checkPermissions()) {
+            Log.e(TAG, "Cannot reconnect: missing permissions")
+            _connectionState.value = ConnectionState.Error("Missing Bluetooth permissions")
+            return
+        }
+
+        if (!isBluetoothEnabled()) {
+            Log.e(TAG, "Cannot reconnect: Bluetooth disabled")
+            _connectionState.value = ConnectionState.Error("Bluetooth is not enabled")
+            return
+        }
+
+        reconnectAttempts++
+        if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+            Log.e(TAG, "Max reconnection attempts reached")
+            _connectionState.value = ConnectionState.Error("Could not reconnect to device")
+            lastConnectedDevice = null
+            reconnectAttempts = 0
+            return
+        }
+
+        Log.d(TAG, "Attempting to reconnect (attempt $reconnectAttempts/$MAX_RECONNECT_ATTEMPTS)")
+        _connectionState.value = ConnectionState.Reconnecting(reconnectAttempts, MAX_RECONNECT_ATTEMPTS)
+
+        bluetoothGatt?.close()
+        bluetoothGatt = device.connectGatt(context, false, gattCallback)
+    }
+
+    private fun scheduleReconnect() {
+        cancelReconnect()
+
+        val delay = minOf(
+            INITIAL_RECONNECT_DELAY_MS * (1 shl reconnectAttempts),
+            MAX_RECONNECT_DELAY_MS
+        )
+
+        Log.d(TAG, "Scheduling reconnection in ${delay}ms")
+
+        reconnectJob = reconnectionScope.launch {
+            delay(delay)
+            attemptReconnect()
+        }
+    }
+
+    private fun cancelReconnect() {
+        reconnectJob?.cancel()
+        reconnectJob = null
     }
 
     @SuppressLint("MissingPermission")
     fun disconnect() {
         if (!checkPermissions()) return
+
+        isManualDisconnect = true // Mark as manual disconnect
+        cancelReconnect() // Cancel any pending reconnection attempts
 
         // Disable notifications before disconnecting
         heartRateCharacteristic?.let { characteristic ->
@@ -274,11 +365,13 @@ class HeartRateMonitorManager(private val context: Context) {
         bluetoothGatt?.close()
         bluetoothGatt = null
         heartRateCharacteristic = null
+        lastConnectedDevice = null // Clear last device
+        reconnectAttempts = 0 // Reset reconnect attempts
         _connectionState.value = ConnectionState.Disconnected
         _heartRate.value = null
         _energyExpended.value = null
         _rrIntervals.value = emptyList()
-        Log.d(TAG, "Disconnected")
+        Log.d(TAG, "Manually disconnected")
     }
 
     @SuppressLint("MissingPermission")
@@ -410,6 +503,7 @@ class HeartRateMonitorManager(private val context: Context) {
     }
 
     fun cleanup() {
+        cancelReconnect()
         stopScan()
         disconnect()
     }

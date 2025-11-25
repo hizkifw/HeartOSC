@@ -93,11 +93,13 @@ class HeartRateViewModel(application: Application) : AndroidViewModel(applicatio
             connectionState.collect { state ->
                 val isConnected = state is HeartRateMonitorManager.ConnectionState.Connected ||
                                  state is HeartRateMonitorManager.ConnectionState.Discovering
-                oscSender?.updateConnectionState(isConnected)
-                heartRateService?.updateConnectionState(isConnected)
+                // During reconnection, maintain the last connected state for OSC
+                val shouldSendConnected = isConnected || state is HeartRateMonitorManager.ConnectionState.Reconnecting
+                oscSender?.updateConnectionState(shouldSendConnected)
+                heartRateService?.updateConnectionState(shouldSendConnected)
 
-                // Stop pulse generator when disconnected
-                if (!isConnected) {
+                // Stop pulse generator when disconnected (but not when reconnecting)
+                if (!isConnected && state !is HeartRateMonitorManager.ConnectionState.Reconnecting) {
                     pulseGenerator.stop()
                 }
             }

@@ -29,6 +29,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -251,7 +252,7 @@ fun OnboardingScreen(
                         else -> true
                     }
                 ) {
-                    Text(if (pagerState.currentPage == 4) "Get Started" else "Next")
+                    Text(if (pagerState.currentPage == 4) stringResource(R.string.onboarding_button_get_started) else stringResource(R.string.onboarding_button_next))
                 }
             }
         }
@@ -269,7 +270,7 @@ fun WelcomePage() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Welcome to HeartOSC",
+            text = stringResource(R.string.onboarding_welcome_title),
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -279,7 +280,7 @@ fun WelcomePage() {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Stream your heart rate to VRChat",
+            text = stringResource(R.string.onboarding_welcome_subtitle),
             fontSize = 20.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface
@@ -297,10 +298,8 @@ fun WelcomePage() {
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("• Connect Bluetooth heart rate monitors")
-                Text("• Real-time BPM with pulse animation")
-                Text("• Background monitoring")
-                Text("• Customizable OSC parameters")
+                Text(stringResource(R.string.onboarding_feature_bluetooth))
+                Text(stringResource(R.string.onboarding_feature_customizable))
             }
         }
     }
@@ -331,7 +330,7 @@ fun BluetoothPermissionPage(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Bluetooth Permissions",
+            text = stringResource(R.string.onboarding_bluetooth_title),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -341,7 +340,7 @@ fun BluetoothPermissionPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Required to connect to your heart rate monitor",
+            text = stringResource(R.string.onboarding_bluetooth_subtitle),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface
@@ -354,14 +353,14 @@ fun BluetoothPermissionPage(
                 onClick = onRequestPermission,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Grant Bluetooth Permissions")
+                Text(stringResource(R.string.onboarding_button_grant_bluetooth))
             }
         } else if (!isBluetoothEnabled) {
             Button(
                 onClick = onEnableBluetooth,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Enable Bluetooth")
+                Text(stringResource(R.string.onboarding_button_enable_bluetooth))
             }
         } else {
             Card(
@@ -381,7 +380,7 @@ fun BluetoothPermissionPage(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Bluetooth permissions granted!",
+                        text = stringResource(R.string.onboarding_bluetooth_granted),
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
@@ -413,7 +412,7 @@ fun NotificationPermissionPage(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Notifications",
+            text = stringResource(R.string.onboarding_notifications_title),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -423,7 +422,7 @@ fun NotificationPermissionPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "See your heart rate while the app is in the background",
+            text = stringResource(R.string.onboarding_notifications_subtitle),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface
@@ -436,7 +435,7 @@ fun NotificationPermissionPage(
                 onClick = onRequestPermission,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Enable Notifications")
+                Text(stringResource(R.string.onboarding_button_enable_notifications))
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -445,7 +444,7 @@ fun NotificationPermissionPage(
                 onClick = onRequestPermission,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Skip for now")
+                Text(stringResource(R.string.onboarding_button_skip))
             }
         } else {
             Card(
@@ -465,7 +464,7 @@ fun NotificationPermissionPage(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Notifications enabled!",
+                        text = stringResource(R.string.onboarding_notifications_enabled),
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
@@ -490,7 +489,7 @@ fun OscSetupPage(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "VRChat Connection",
+            text = stringResource(R.string.onboarding_osc_title),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -500,7 +499,7 @@ fun OscSetupPage(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Enter your VRChat PC's IP address",
+            text = stringResource(R.string.onboarding_osc_subtitle),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface
@@ -511,7 +510,7 @@ fun OscSetupPage(
         OutlinedTextField(
             value = hostText,
             onValueChange = onHostChanged,
-            label = { Text("OSC Host") },
+            label = { Text(stringResource(R.string.label_osc_host)) },
             placeholder = { Text(SettingsManager.DEFAULT_OSC_HOST) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -527,7 +526,7 @@ fun OscSetupPage(
                     onPortChanged(it)
                 }
             },
-            label = { Text("OSC Port") },
+            label = { Text(stringResource(R.string.label_osc_port)) },
             placeholder = { Text(SettingsManager.DEFAULT_OSC_PORT.toString()) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -539,7 +538,7 @@ fun OscSetupPage(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "You can change these later in Settings",
+            text = stringResource(R.string.onboarding_help_change_later),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             textAlign = TextAlign.Center
@@ -567,7 +566,7 @@ fun CompletePage() {
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "All Set!",
+            text = stringResource(R.string.onboarding_complete_title),
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -577,28 +576,10 @@ fun CompletePage() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Ready to connect your heart rate monitor",
+            text = stringResource(R.string.onboarding_complete_subtitle),
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface
         )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text("1. Connect to your heart rate monitor")
-                Text("2. Open VRChat")
-                Text("3. Your heart rate will appear in-game")
-            }
-        }
     }
 }

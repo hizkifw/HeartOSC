@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -22,12 +23,12 @@ fun AboutScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("About") },
+                title = { Text(stringResource(R.string.about_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.desc_back)
                         )
                     }
                 },
@@ -50,21 +51,21 @@ fun AboutScreen(
 
             // App Name
             Text(
-                text = "HeartOSC",
+                text = stringResource(R.string.app_name),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                text = "Version 1.0",
+                text = stringResource(R.string.about_version),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
 
             // Description
             Text(
-                text = "HeartOSC bridges Bluetooth heart rate monitors with VRChat via OSC protocol.",
+                text = stringResource(R.string.about_description),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
@@ -81,17 +82,14 @@ fun AboutScreen(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Features",
+                        text = stringResource(R.string.about_section_features),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    FeatureItem("• Bluetooth LE heart rate monitor support")
-                    FeatureItem("• Real-time BPM display with pulse animation")
-                    FeatureItem("• OSC integration for VRChat avatars")
-                    FeatureItem("• Heart rate variability (RR-Interval) tracking")
-                    FeatureItem("• Energy expenditure monitoring")
+                    FeatureItem(stringResource(R.string.about_feature_ble))
+                    FeatureItem(stringResource(R.string.about_feature_osc_integration))
                 }
             }
 
@@ -107,25 +105,19 @@ fun AboutScreen(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "VRChat OSC Parameters",
+                        text = stringResource(R.string.about_section_disclaimer),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    FeatureItem("• /avatar/parameters/HR (int)")
-                    FeatureItem("• /avatar/parameters/isHRConnected (bool)")
-                    FeatureItem("• /avatar/parameters/HeartBeatToggle (bool)")
-                    FeatureItem("• /avatar/parameters/isHRBeat (bool)")
+                    Text(
+                        text = stringResource(R.string.about_disclaimer),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
-
-            Text(
-                text = "Made with ❤️ for VRChat",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center
-            )
         }
     }
 }

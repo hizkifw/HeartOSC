@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 
@@ -35,12 +36,12 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.desc_back)
                         )
                     }
                 },
@@ -60,7 +61,7 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "OSC Configuration",
+                text = stringResource(R.string.settings_section_osc_config),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -70,7 +71,7 @@ fun SettingsScreen(
             OutlinedTextField(
                 value = hostText,
                 onValueChange = { hostText = it },
-                label = { Text("OSC Host") },
+                label = { Text(stringResource(R.string.label_osc_host)) },
                 placeholder = { Text(SettingsManager.DEFAULT_OSC_HOST) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -78,7 +79,7 @@ fun SettingsScreen(
             )
 
             Text(
-                text = "IP address or hostname of the OSC server",
+                text = stringResource(R.string.help_osc_host),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.padding(start = 16.dp)
@@ -91,7 +92,7 @@ fun SettingsScreen(
                         portText = it
                     }
                 },
-                label = { Text("OSC Port") },
+                label = { Text(stringResource(R.string.label_osc_port)) },
                 placeholder = { Text(SettingsManager.DEFAULT_OSC_PORT.toString()) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -101,7 +102,7 @@ fun SettingsScreen(
             )
 
             Text(
-                text = "Port number (1-65535)",
+                text = stringResource(R.string.help_osc_port),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.padding(start = 16.dp)
@@ -110,7 +111,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "OSC Parameters",
+                text = stringResource(R.string.settings_section_osc_params),
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -120,7 +121,7 @@ fun SettingsScreen(
             OutlinedTextField(
                 value = hrParamText,
                 onValueChange = { hrParamText = it },
-                label = { Text("Heart Rate Parameter") },
+                label = { Text(stringResource(R.string.label_hr_parameter)) },
                 placeholder = { Text(SettingsManager.DEFAULT_HR_PARAM) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -128,7 +129,7 @@ fun SettingsScreen(
             )
 
             Text(
-                text = "OSC path for heart rate value (integer)",
+                text = stringResource(R.string.help_hr_parameter),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.padding(start = 16.dp)
@@ -137,7 +138,7 @@ fun SettingsScreen(
             OutlinedTextField(
                 value = hrConnectedParamText,
                 onValueChange = { hrConnectedParamText = it },
-                label = { Text("HR Connected Parameter") },
+                label = { Text(stringResource(R.string.label_hr_connected_parameter)) },
                 placeholder = { Text(SettingsManager.DEFAULT_HR_CONNECTED_PARAM) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -145,7 +146,7 @@ fun SettingsScreen(
             )
 
             Text(
-                text = "OSC path for HR monitor connection status (bool)",
+                text = stringResource(R.string.help_hr_connected_parameter),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.padding(start = 16.dp)
@@ -154,7 +155,7 @@ fun SettingsScreen(
             OutlinedTextField(
                 value = heartbeatToggleParamText,
                 onValueChange = { heartbeatToggleParamText = it },
-                label = { Text("Heartbeat Toggle Parameter") },
+                label = { Text(stringResource(R.string.label_heartbeat_toggle_parameter)) },
                 placeholder = { Text(SettingsManager.DEFAULT_HEARTBEAT_TOGGLE_PARAM) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -162,7 +163,7 @@ fun SettingsScreen(
             )
 
             Text(
-                text = "OSC path for heartbeat toggle state (bool)",
+                text = stringResource(R.string.help_heartbeat_toggle_parameter),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.padding(start = 16.dp)
@@ -171,7 +172,7 @@ fun SettingsScreen(
             OutlinedTextField(
                 value = heartbeatPulseParamText,
                 onValueChange = { heartbeatPulseParamText = it },
-                label = { Text("Heartbeat Pulse Parameter") },
+                label = { Text(stringResource(R.string.label_heartbeat_pulse_parameter)) },
                 placeholder = { Text(SettingsManager.DEFAULT_HEARTBEAT_PULSE_PARAM) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -179,7 +180,7 @@ fun SettingsScreen(
             )
 
             Text(
-                text = "OSC path for heartbeat pulse state (bool)",
+                text = stringResource(R.string.help_heartbeat_pulse_parameter),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 modifier = Modifier.padding(start = 16.dp)
@@ -209,7 +210,7 @@ fun SettingsScreen(
                          heartbeatPulseParamText.isNotBlank(),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Save")
+                Text(stringResource(R.string.common_save))
             }
 
             OutlinedButton(
@@ -223,7 +224,7 @@ fun SettingsScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Reset to Defaults")
+                Text(stringResource(R.string.button_reset_defaults))
             }
         }
     }

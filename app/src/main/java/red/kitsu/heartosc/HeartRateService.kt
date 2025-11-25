@@ -97,10 +97,10 @@ class HeartRateService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Heart Rate Monitor",
+                getString(R.string.notification_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Keeps heart rate monitoring active"
+                description = getString(R.string.notification_channel_description)
                 setShowBadge(false)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 setSound(null, null)
@@ -144,11 +144,11 @@ class HeartRateService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val title = if (isConnected) "HeartOSC - Connected" else "HeartOSC - Disconnected"
+        val title = if (isConnected) getString(R.string.notification_title_connected) else getString(R.string.notification_title_disconnected)
         val content = if (isConnected && currentHeartRate != null) {
-            "$currentHeartRate BPM"
+            getString(R.string.notification_content_bpm, currentHeartRate)
         } else {
-            "Waiting for heart rate data"
+            getString(R.string.notification_content_waiting)
         }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
@@ -170,7 +170,7 @@ class HeartRateService : Service() {
             .setLocalOnly(true)
             .addAction(
                 android.R.drawable.ic_menu_close_clear_cancel,
-                "Disconnect",
+                getString(R.string.notification_action_disconnect),
                 disconnectPendingIntent
             )
             .build()

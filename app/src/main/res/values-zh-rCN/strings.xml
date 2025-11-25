@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============================================ -->
+    <!-- Common UI Elements -->
+    <!-- ============================================ -->
+    <string name="common_settings">设置</string>
+    <string name="common_about">关于</string>
+    <string name="common_back">返回</string>
+    <string name="common_save">保存</string>
+    <string name="common_next">下一步</string>
+
+    <!-- ============================================ -->
+    <!-- Content Descriptions (Accessibility) -->
+    <!-- ============================================ -->
+    <string name="desc_more_options">更多选项</string>
+    <string name="desc_back">返回</string>
+
+    <!-- ============================================ -->
+    <!-- Main Screen -->
+    <!-- ============================================ -->
+    <string name="main_title">HeartOSC</string>
+    <string name="main_unit_bpm">BPM</string>
+    <string name="main_button_connect">连接心率监测器</string>
+    <string name="main_button_disconnect">断开连接</string>
+
+    <!-- ============================================ -->
+    <!-- Connection Status Messages -->
+    <!-- ============================================ -->
+    <string name="status_not_connected">未连接</string>
+    <string name="status_connecting">正在连接...</string>
+    <string name="status_connected">已连接</string>
+    <string name="status_discovering">正在发现服务...</string>
+    <string name="status_reconnecting">正在重新连接... (%1$d/%2$d)</string>
+
+    <!-- ============================================ -->
+    <!-- Error Messages -->
+    <!-- ============================================ -->
+    <string name="error_bluetooth_permissions">需要蓝牙权限</string>
+    <string name="error_bluetooth_disabled">必须启用蓝牙</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Common -->
+    <!-- ============================================ -->
+    <string name="onboarding_button_next">下一步</string>
+    <string name="onboarding_button_get_started">开始使用</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 1: Welcome -->
+    <!-- ============================================ -->
+    <string name="onboarding_welcome_title">欢迎使用 HeartOSC</string>
+    <string name="onboarding_welcome_subtitle">将您的心率传输到 VRChat</string>
+    <string name="onboarding_feature_bluetooth">• 连接蓝牙心率监测器</string>
+    <string name="onboarding_feature_customizable">• 可自定义OSC参数</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 2: Bluetooth Permissions -->
+    <!-- ============================================ -->
+    <string name="onboarding_bluetooth_title">蓝牙权限</string>
+    <string name="onboarding_bluetooth_subtitle">需要连接您的心率监测器</string>
+    <string name="onboarding_button_grant_bluetooth">授予蓝牙权限</string>
+    <string name="onboarding_button_enable_bluetooth">启用蓝牙</string>
+    <string name="onboarding_bluetooth_granted">蓝牙权限已授予！</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 3: Notifications -->
+    <!-- ============================================ -->
+    <string name="onboarding_notifications_title">通知</string>
+    <string name="onboarding_notifications_subtitle">在应用处于后台时查看您的心率</string>
+    <string name="onboarding_button_enable_notifications">启用通知</string>
+    <string name="onboarding_button_skip">暂时跳过</string>
+    <string name="onboarding_notifications_enabled">通知已启用！</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 4: OSC Setup -->
+    <!-- ============================================ -->
+    <string name="onboarding_osc_title">VRChat 连接</string>
+    <string name="onboarding_osc_subtitle">输入您的 VRChat PC 的 IP 地址</string>
+    <string name="onboarding_help_change_later">您可以稍后在设置中更改</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 5: Complete -->
+    <!-- ============================================ -->
+    <string name="onboarding_complete_title">全部完成！</string>
+    <string name="onboarding_complete_subtitle">准备连接您的心率监测器</string>
+
+    <!-- ============================================ -->
+    <!-- Settings Screen -->
+    <!-- ============================================ -->
+    <string name="settings_title">设置</string>
+    <string name="settings_section_osc_config">OSC 配置</string>
+    <string name="settings_section_osc_params">OSC 参数</string>
+
+    <!-- Field Labels -->
+    <string name="label_osc_host">OSC 主机</string>
+    <string name="label_osc_port">OSC 端口</string>
+    <string name="label_hr_parameter">心率参数</string>
+    <string name="label_hr_connected_parameter">心率连接参数</string>
+    <string name="label_heartbeat_toggle_parameter">心跳切换参数</string>
+    <string name="label_heartbeat_pulse_parameter">心跳脉冲参数</string>
+
+    <!-- Helper Text -->
+    <string name="help_osc_host">OSC 服务器的 IP 地址或主机名</string>
+    <string name="help_osc_port">端口号 (1-65535)</string>
+    <string name="help_hr_parameter">心率值的 OSC 路径（整数）</string>
+    <string name="help_hr_connected_parameter">心率监测器连接状态的 OSC 路径（布尔值）</string>
+    <string name="help_heartbeat_toggle_parameter">心跳切换状态的 OSC 路径（布尔值）</string>
+    <string name="help_heartbeat_pulse_parameter">心跳脉冲状态的 OSC 路径（布尔值）</string>
+
+    <!-- Buttons -->
+    <string name="button_reset_defaults">恢复默认值</string>
+
+    <!-- ============================================ -->
+    <!-- Device List Screen -->
+    <!-- ============================================ -->
+    <string name="device_title">选择心率监测器</string>
+    <string name="device_scanning">正在扫描心率监测器...</string>
+    <string name="device_no_devices">未找到设备</string>
+    <string name="device_help_text">确保您的心率监测器已开启并靠近</string>
+    <string name="device_unknown">未知设备</string>
+
+    <!-- ============================================ -->
+    <!-- About Screen -->
+    <!-- ============================================ -->
+    <string name="about_title">关于</string>
+    <string name="about_version">版本 1.0</string>
+    <string name="about_description">HeartOSC 通过 OSC 协议将蓝牙心率监测器连接到 VRChat。</string>
+
+    <!-- Features Section -->
+    <string name="about_section_features">功能</string>
+    <string name="about_feature_ble">• 支持蓝牙低功耗心率监测器</string>
+    <string name="about_feature_osc_integration">• VRChat 虚拟形象的 OSC 集成</string>
+
+    <!-- Disclaimer Section -->
+    <string name="about_section_disclaimer">免责声明</string>
+    <string name="about_disclaimer">HeartOSC 是一个独立项目，与 VRChat Inc. 没有关联、认可或赞助关系。VRChat 是 VRChat Inc. 的注册商标。所有商标均为其各自所有者的财产。</string>
+
+    <!-- ============================================ -->
+    <!-- Notification (Service) -->
+    <!-- ============================================ -->
+    <string name="notification_channel_name">心率监测器</string>
+    <string name="notification_channel_description">保持心率监测活动</string>
+    <string name="notification_title_connected">HeartOSC - 已连接</string>
+    <string name="notification_title_disconnected">HeartOSC - 已断开</string>
+    <string name="notification_content_bpm">%d BPM</string>
+    <string name="notification_content_waiting">等待心率数据</string>
+    <string name="notification_action_disconnect">断开连接</string>
+</resources>

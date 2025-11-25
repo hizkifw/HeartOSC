@@ -1,3 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">HeartOSC</string>
+    <!-- ============================================ -->
+    <!-- App Metadata (Non-translatable) -->
+    <!-- ============================================ -->
+    <string name="app_name" translatable="false">HeartOSC</string>
+    <string name="brand_vrchat" translatable="false">VRChat</string>
+
+    <!-- ============================================ -->
+    <!-- Common UI Elements -->
+    <!-- ============================================ -->
+    <string name="common_settings">Settings</string>
+    <string name="common_about">About</string>
+    <string name="common_back">Back</string>
+    <string name="common_save">Save</string>
+    <string name="common_next">Next</string>
+
+    <!-- ============================================ -->
+    <!-- Content Descriptions (Accessibility) -->
+    <!-- ============================================ -->
+    <string name="desc_more_options">More options</string>
+    <string name="desc_back">Back</string>
+
+    <!-- ============================================ -->
+    <!-- Main Screen -->
+    <!-- ============================================ -->
+    <string name="main_title">HeartOSC</string>
+    <string name="main_unit_bpm">BPM</string>
+    <string name="main_button_connect">Connect to HRM</string>
+    <string name="main_button_disconnect">Disconnect</string>
+
+    <!-- ============================================ -->
+    <!-- Connection Status Messages -->
+    <!-- ============================================ -->
+    <string name="status_not_connected">Not connected</string>
+    <string name="status_connecting">Connecting...</string>
+    <string name="status_connected">Connected</string>
+    <string name="status_discovering">Discovering services...</string>
+    <string name="status_reconnecting">Reconnecting... (%1$d/%2$d)</string>
+
+    <!-- ============================================ -->
+    <!-- Error Messages -->
+    <!-- ============================================ -->
+    <string name="error_bluetooth_permissions">Bluetooth permissions required</string>
+    <string name="error_bluetooth_disabled">Bluetooth must be enabled</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Common -->
+    <!-- ============================================ -->
+    <string name="onboarding_button_next">Next</string>
+    <string name="onboarding_button_get_started">Get Started</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 1: Welcome -->
+    <!-- ============================================ -->
+    <string name="onboarding_welcome_title">Welcome to HeartOSC</string>
+    <string name="onboarding_welcome_subtitle">Stream your heart rate to VRChat</string>
+    <string name="onboarding_feature_bluetooth">• Connect Bluetooth heart rate monitors</string>
+    <string name="onboarding_feature_customizable">• Customizable OSC parameters</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 2: Bluetooth Permissions -->
+    <!-- ============================================ -->
+    <string name="onboarding_bluetooth_title">Bluetooth Permissions</string>
+    <string name="onboarding_bluetooth_subtitle">Required to connect to your heart rate monitor</string>
+    <string name="onboarding_button_grant_bluetooth">Grant Bluetooth Permissions</string>
+    <string name="onboarding_button_enable_bluetooth">Enable Bluetooth</string>
+    <string name="onboarding_bluetooth_granted">Bluetooth permissions granted!</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 3: Notifications -->
+    <!-- ============================================ -->
+    <string name="onboarding_notifications_title">Notifications</string>
+    <string name="onboarding_notifications_subtitle">See your heart rate while the app is in the background</string>
+    <string name="onboarding_button_enable_notifications">Enable Notifications</string>
+    <string name="onboarding_button_skip">Skip for now</string>
+    <string name="onboarding_notifications_enabled">Notifications enabled!</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 4: OSC Setup -->
+    <!-- ============================================ -->
+    <string name="onboarding_osc_title">VRChat Connection</string>
+    <string name="onboarding_osc_subtitle">Enter your VRChat PC\'s IP address</string>
+    <string name="onboarding_help_change_later">You can change these later in Settings</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 5: Complete -->
+    <!-- ============================================ -->
+    <string name="onboarding_complete_title">All Set!</string>
+    <string name="onboarding_complete_subtitle">Ready to connect your heart rate monitor</string>
+
+    <!-- ============================================ -->
+    <!-- Settings Screen -->
+    <!-- ============================================ -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_osc_config">OSC Configuration</string>
+    <string name="settings_section_osc_params">OSC Parameters</string>
+
+    <!-- Field Labels -->
+    <string name="label_osc_host">OSC Host</string>
+    <string name="label_osc_port">OSC Port</string>
+    <string name="label_hr_parameter">Heart Rate Parameter</string>
+    <string name="label_hr_connected_parameter">HR Connected Parameter</string>
+    <string name="label_heartbeat_toggle_parameter">Heartbeat Toggle Parameter</string>
+    <string name="label_heartbeat_pulse_parameter">Heartbeat Pulse Parameter</string>
+
+    <!-- Helper Text -->
+    <string name="help_osc_host">IP address or hostname of the OSC server</string>
+    <string name="help_osc_port">Port number (1-65535)</string>
+    <string name="help_hr_parameter">OSC path for heart rate value (integer)</string>
+    <string name="help_hr_connected_parameter">OSC path for HR monitor connection status (bool)</string>
+    <string name="help_heartbeat_toggle_parameter">OSC path for heartbeat toggle state (bool)</string>
+    <string name="help_heartbeat_pulse_parameter">OSC path for heartbeat pulse state (bool)</string>
+
+    <!-- Buttons -->
+    <string name="button_reset_defaults">Reset to Defaults</string>
+
+    <!-- ============================================ -->
+    <!-- Device List Screen -->
+    <!-- ============================================ -->
+    <string name="device_title">Select Heart Rate Monitor</string>
+    <string name="device_scanning">Scanning for heart rate monitors...</string>
+    <string name="device_no_devices">No devices found</string>
+    <string name="device_help_text">Make sure your heart rate monitor is turned on and nearby</string>
+    <string name="device_unknown">Unknown Device</string>
+
+    <!-- ============================================ -->
+    <!-- About Screen -->
+    <!-- ============================================ -->
+    <string name="about_title">About</string>
+    <string name="about_version">Version 1.0</string>
+    <string name="about_description">HeartOSC bridges Bluetooth heart rate monitors with VRChat via OSC protocol.</string>
+
+    <!-- Features Section -->
+    <string name="about_section_features">Features</string>
+    <string name="about_feature_ble">• Bluetooth LE heart rate monitor support</string>
+    <string name="about_feature_osc_integration">• OSC integration for VRChat avatars</string>
+
+    <!-- Disclaimer Section -->
+    <string name="about_section_disclaimer">Disclaimer</string>
+    <string name="about_disclaimer">HeartOSC is an independent project and is not affiliated with, endorsed by, or sponsored by VRChat Inc. VRChat is a registered trademark of VRChat Inc. All trademarks are the property of their respective owners.</string>
+
+    <!-- ============================================ -->
+    <!-- Notification (Service) -->
+    <!-- ============================================ -->
+    <string name="notification_channel_name">Heart Rate Monitor</string>
+    <string name="notification_channel_description">Keeps heart rate monitoring active</string>
+    <string name="notification_title_connected">HeartOSC - Connected</string>
+    <string name="notification_title_disconnected">HeartOSC - Disconnected</string>
+    <string name="notification_content_bpm">%d BPM</string>
+    <string name="notification_content_waiting">Waiting for heart rate data</string>
+    <string name="notification_action_disconnect">Disconnect</string>
 </resources>

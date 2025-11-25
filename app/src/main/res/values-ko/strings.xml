@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============================================ -->
+    <!-- Common UI Elements -->
+    <!-- ============================================ -->
+    <string name="common_settings">설정</string>
+    <string name="common_about">정보</string>
+    <string name="common_back">뒤로</string>
+    <string name="common_save">저장</string>
+    <string name="common_next">다음</string>
+
+    <!-- ============================================ -->
+    <!-- Content Descriptions (Accessibility) -->
+    <!-- ============================================ -->
+    <string name="desc_more_options">더 많은 옵션</string>
+    <string name="desc_back">뒤로</string>
+
+    <!-- ============================================ -->
+    <!-- Main Screen -->
+    <!-- ============================================ -->
+    <string name="main_title">HeartOSC</string>
+    <string name="main_unit_bpm">BPM</string>
+    <string name="main_button_connect">심박수 모니터에 연결</string>
+    <string name="main_button_disconnect">연결 해제</string>
+
+    <!-- ============================================ -->
+    <!-- Connection Status Messages -->
+    <!-- ============================================ -->
+    <string name="status_not_connected">연결되지 않음</string>
+    <string name="status_connecting">연결 중...</string>
+    <string name="status_connected">연결됨</string>
+    <string name="status_discovering">서비스 검색 중...</string>
+    <string name="status_reconnecting">재연결 중... (%1$d/%2$d)</string>
+
+    <!-- ============================================ -->
+    <!-- Error Messages -->
+    <!-- ============================================ -->
+    <string name="error_bluetooth_permissions">블루투스 권한이 필요합니다</string>
+    <string name="error_bluetooth_disabled">블루투스를 활성화해야 합니다</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Common -->
+    <!-- ============================================ -->
+    <string name="onboarding_button_next">다음</string>
+    <string name="onboarding_button_get_started">시작하기</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 1: Welcome -->
+    <!-- ============================================ -->
+    <string name="onboarding_welcome_title">HeartOSC에 오신 것을 환영합니다</string>
+    <string name="onboarding_welcome_subtitle">VRChat으로 심박수 스트리밍</string>
+    <string name="onboarding_feature_bluetooth">• 블루투스 심박수 모니터 연결</string>
+    <string name="onboarding_feature_customizable">• 사용자 지정 가능한 OSC 매개변수</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 2: Bluetooth Permissions -->
+    <!-- ============================================ -->
+    <string name="onboarding_bluetooth_title">블루투스 권한</string>
+    <string name="onboarding_bluetooth_subtitle">심박수 모니터에 연결하는 데 필요합니다</string>
+    <string name="onboarding_button_grant_bluetooth">블루투스 권한 부여</string>
+    <string name="onboarding_button_enable_bluetooth">블루투스 활성화</string>
+    <string name="onboarding_bluetooth_granted">블루투스 권한이 부여되었습니다!</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 3: Notifications -->
+    <!-- ============================================ -->
+    <string name="onboarding_notifications_title">알림</string>
+    <string name="onboarding_notifications_subtitle">앱이 백그라운드에 있는 동안 심박수 확인</string>
+    <string name="onboarding_button_enable_notifications">알림 활성화</string>
+    <string name="onboarding_button_skip">건너뛰기</string>
+    <string name="onboarding_notifications_enabled">알림이 활성화되었습니다!</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 4: OSC Setup -->
+    <!-- ============================================ -->
+    <string name="onboarding_osc_title">VRChat 연결</string>
+    <string name="onboarding_osc_subtitle">VRChat PC의 IP 주소 입력</string>
+    <string name="onboarding_help_change_later">나중에 설정에서 변경할 수 있습니다</string>
+
+    <!-- ============================================ -->
+    <!-- Onboarding - Page 5: Complete -->
+    <!-- ============================================ -->
+    <string name="onboarding_complete_title">모두 완료!</string>
+    <string name="onboarding_complete_subtitle">심박수 모니터에 연결할 준비가 되었습니다</string>
+
+    <!-- ============================================ -->
+    <!-- Settings Screen -->
+    <!-- ============================================ -->
+    <string name="settings_title">설정</string>
+    <string name="settings_section_osc_config">OSC 구성</string>
+    <string name="settings_section_osc_params">OSC 매개변수</string>
+
+    <!-- Field Labels -->
+    <string name="label_osc_host">OSC 호스트</string>
+    <string name="label_osc_port">OSC 포트</string>
+    <string name="label_hr_parameter">심박수 매개변수</string>
+    <string name="label_hr_connected_parameter">심박수 연결 매개변수</string>
+    <string name="label_heartbeat_toggle_parameter">심박 토글 매개변수</string>
+    <string name="label_heartbeat_pulse_parameter">심박 펄스 매개변수</string>
+
+    <!-- Helper Text -->
+    <string name="help_osc_host">OSC 서버의 IP 주소 또는 호스트 이름</string>
+    <string name="help_osc_port">포트 번호 (1-65535)</string>
+    <string name="help_hr_parameter">심박수 값의 OSC 경로 (정수)</string>
+    <string name="help_hr_connected_parameter">심박수 모니터 연결 상태의 OSC 경로 (부울)</string>
+    <string name="help_heartbeat_toggle_parameter">심박 토글 상태의 OSC 경로 (부울)</string>
+    <string name="help_heartbeat_pulse_parameter">심박 펄스 상태의 OSC 경로 (부울)</string>
+
+    <!-- Buttons -->
+    <string name="button_reset_defaults">기본값으로 재설정</string>
+
+    <!-- ============================================ -->
+    <!-- Device List Screen -->
+    <!-- ============================================ -->
+    <string name="device_title">심박수 모니터 선택</string>
+    <string name="device_scanning">심박수 모니터 검색 중...</string>
+    <string name="device_no_devices">장치를 찾을 수 없습니다</string>
+    <string name="device_help_text">심박수 모니터가 켜져 있고 근처에 있는지 확인하세요</string>
+    <string name="device_unknown">알 수 없는 장치</string>
+
+    <!-- ============================================ -->
+    <!-- About Screen -->
+    <!-- ============================================ -->
+    <string name="about_title">정보</string>
+    <string name="about_version">버전 1.0</string>
+    <string name="about_description">HeartOSC는 OSC 프로토콜을 통해 블루투스 심박수 모니터를 VRChat에 연결합니다.</string>
+
+    <!-- Features Section -->
+    <string name="about_section_features">기능</string>
+    <string name="about_feature_ble">• 블루투스 LE 심박수 모니터 지원</string>
+    <string name="about_feature_osc_integration">• VRChat 아바타용 OSC 통합</string>
+
+    <!-- Disclaimer Section -->
+    <string name="about_section_disclaimer">면책 조항</string>
+    <string name="about_disclaimer">HeartOSC는 독립적인 프로젝트이며 VRChat Inc.와 제휴, 승인 또는 후원 관계가 없습니다. VRChat은 VRChat Inc.의 등록 상표입니다. 모든 상표는 해당 소유자의 재산입니다.</string>
+
+    <!-- ============================================ -->
+    <!-- Notification (Service) -->
+    <!-- ============================================ -->
+    <string name="notification_channel_name">심박수 모니터</string>
+    <string name="notification_channel_description">심박수 모니터링을 활성 상태로 유지</string>
+    <string name="notification_title_connected">HeartOSC - 연결됨</string>
+    <string name="notification_title_disconnected">HeartOSC - 연결 해제됨</string>
+    <string name="notification_content_bpm">%d BPM</string>
+    <string name="notification_content_waiting">심박수 데이터 대기 중</string>
+    <string name="notification_action_disconnect">연결 해제</string>
+</resources>
