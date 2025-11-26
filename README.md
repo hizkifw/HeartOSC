@@ -16,7 +16,7 @@ A modern Android application that streams heart rate data from Bluetooth Low Ene
 - 🔔 **Foreground Service** - Continues monitoring in the background with notification
 - ⚙️ **Fully Configurable** - Customize OSC parameters and pulse behavior
 
-## Screenshots
+<!-- ## Screenshots -->
 
 <!-- Add screenshots here when available -->
 
