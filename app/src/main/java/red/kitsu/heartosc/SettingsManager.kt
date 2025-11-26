@@ -16,6 +16,7 @@ class SettingsManager(context: Context) {
         private const val KEY_HR_CONNECTED_PARAM = "hr_connected_param"
         private const val KEY_HEARTBEAT_TOGGLE_PARAM = "heartbeat_toggle_param"
         private const val KEY_HEARTBEAT_PULSE_PARAM = "heartbeat_pulse_param"
+        private const val KEY_HEARTBEAT_PULSE_DURATION = "heartbeat_pulse_duration"
         private const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
 
         const val DEFAULT_OSC_HOST = "192.168.1.10"
@@ -24,6 +25,7 @@ class SettingsManager(context: Context) {
         const val DEFAULT_HR_CONNECTED_PARAM = "/avatar/parameters/isHRConnected"
         const val DEFAULT_HEARTBEAT_TOGGLE_PARAM = "/avatar/parameters/HeartBeatToggle"
         const val DEFAULT_HEARTBEAT_PULSE_PARAM = "/avatar/parameters/isHRBeat"
+        const val DEFAULT_HEARTBEAT_PULSE_DURATION = 200 // milliseconds
     }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -45,6 +47,9 @@ class SettingsManager(context: Context) {
 
     private val _heartbeatPulseParam = MutableStateFlow(prefs.getString(KEY_HEARTBEAT_PULSE_PARAM, DEFAULT_HEARTBEAT_PULSE_PARAM) ?: DEFAULT_HEARTBEAT_PULSE_PARAM)
     val heartbeatPulseParam: StateFlow<String> = _heartbeatPulseParam.asStateFlow()
+
+    private val _heartbeatPulseDuration = MutableStateFlow(prefs.getInt(KEY_HEARTBEAT_PULSE_DURATION, DEFAULT_HEARTBEAT_PULSE_DURATION))
+    val heartbeatPulseDuration: StateFlow<Int> = _heartbeatPulseDuration.asStateFlow()
 
     fun setOscHost(host: String) {
         _oscHost.value = host
@@ -74,6 +79,11 @@ class SettingsManager(context: Context) {
     fun setHeartbeatPulseParam(param: String) {
         _heartbeatPulseParam.value = param
         prefs.edit().putString(KEY_HEARTBEAT_PULSE_PARAM, param).apply()
+    }
+
+    fun setHeartbeatPulseDuration(duration: Int) {
+        _heartbeatPulseDuration.value = duration
+        prefs.edit().putInt(KEY_HEARTBEAT_PULSE_DURATION, duration).apply()
     }
 
     fun isOnboardingCompleted(): Boolean {

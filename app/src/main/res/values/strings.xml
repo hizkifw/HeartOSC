@@ -103,6 +103,7 @@
     <string name="label_hr_connected_parameter">HR Connected Parameter</string>
     <string name="label_heartbeat_toggle_parameter">Heartbeat Toggle Parameter</string>
     <string name="label_heartbeat_pulse_parameter">Heartbeat Pulse Parameter</string>
+    <string name="label_pulse_duration">Pulse Duration (ms)</string>
 
     <!-- Helper Text -->
     <string name="help_osc_host">IP address or hostname of the OSC server</string>
@@ -111,6 +112,7 @@
     <string name="help_hr_connected_parameter">OSC path for HR monitor connection status (bool)</string>
     <string name="help_heartbeat_toggle_parameter">OSC path for heartbeat toggle state (bool)</string>
     <string name="help_heartbeat_pulse_parameter">OSC path for heartbeat pulse state (bool)</string>
+    <string name="help_pulse_duration">Duration of each heartbeat pulse in milliseconds (1-5000)</string>
 
     <!-- Buttons -->
     <string name="button_reset_defaults">Reset to Defaults</string>

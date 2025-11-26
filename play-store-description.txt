@@ -1,0 +1,89 @@
+Stream your real-time heart rate to VRChat and other OSC-enabled applications! HeartOSC connects to your Bluetooth heart rate monitor and sends live BPM data to your VRChat avatar, enabling immersive heart rate visualizations and interactions.
+
+🎮 PERFECT FOR VRCHAT
+
+Display your actual heart rate on your avatar in real-time. Whether you're exploring worlds, chatting with friends, or experiencing intense moments, your avatar can now show exactly how you're feeling. Compatible with popular VRChat heart rate display prefabs and fully customizable for your avatar's parameters.
+
+📱 KEY FEATURES
+
+• Bluetooth LE Heart Rate Monitor Support - Works with any standard BLE heart rate monitor (Polar, Wahoo, Garmin, Coospo, and more)
+• Real-Time OSC Streaming - Sends heart rate data via OSC protocol over your local network
+• Automatic Reconnection - Smart reconnection with exponential backoff when connection drops
+• Background Monitoring - Continues working even when the app is in the background
+• Fully Customizable - Configure OSC host, port, and all parameter paths
+• Multi-language Support - Available in English, Japanese, Korean, and Simplified Chinese
+• Material Design 3 - Beautiful, modern interface that follows Android design guidelines
+• Multiple OSC Parameters - Heart rate value, connection status, heartbeat toggle, and pulse signals
+
+🔧 OSC PARAMETERS
+
+The app sends the following OSC parameters (all customizable):
+• Heart Rate (Int) - Current BPM value - /avatar/parameters/HR
+• HR Connected (Bool) - Monitor connection status - /avatar/parameters/isHRConnected
+• Heartbeat Toggle (Bool) - Toggles with each heartbeat - /avatar/parameters/HeartBeatToggle
+• Heartbeat Pulse (Bool) - Active during pulse duration - /avatar/parameters/isHRBeat
+
+Adjust pulse duration (1-5000ms) to sync perfectly with your avatar animations.
+
+💪 SUPPORTED HEART RATE MONITORS
+
+Any Bluetooth LE heart rate monitor with standard Heart Rate Service works:
+• Polar H10, H9, H7
+• Wahoo TICKR
+• Garmin HRM-Dual, HRM-Pro
+• Coospo H6, H9
+• And many more!
+
+🎨 VRCHAT INTEGRATION
+
+Setting up is easy:
+1. Enable OSC in VRChat
+2. Add the heart rate parameters to your avatar
+3. Configure HeartOSC with your PC's IP address
+4. Connect your heart rate monitor
+5. Start monitoring and see your heart rate in-game!
+
+For a ready-to-use solution, check out nullstalgia's Heart Rate Display prefab on BOOTH - it works perfectly with HeartOSC right out of the box.
+
+🔒 PRIVACY & SECURITY
+
+Your privacy matters. HeartOSC:
+• Does NOT collect or store personal information
+• Does NOT send data to external servers
+• Works completely offline
+• Sends data only to YOUR configured local address
+• No analytics, no tracking, no ads
+• Open source and fully transparent
+
+⚙️ TECHNICAL DETAILS
+
+• Protocol: OSC (Open Sound Control) over UDP
+• Minimum Android Version: 8.0 (API 26)
+• Permissions Required: Bluetooth (for heart rate monitor), Location (Android requirement for BLE scanning), Notifications (optional, for background service)
+• Network: Local network only, no internet required
+• Data Transmission: Unencrypted UDP (standard for OSC)
+
+🌐 BEYOND VRCHAT
+
+Works with any OSC-enabled application:
+• Live streaming overlays
+• Music visualizations
+• Interactive installations
+• Custom game integrations
+
+🆓 FREE & OPEN SOURCE
+
+HeartOSC is completely free with no ads, no in-app purchases, and no premium features. It's open source software (MIT License) - the complete source code is available on GitHub for transparency and community contributions.
+
+📖 SUPPORT
+
+Visit our GitHub for setup instructions, troubleshooting, and VRChat avatar examples.
+
+Bring your real-world heart rate into the virtual world!
+
+---
+
+Visit our website: https://github.com/hizkifw/HeartOSC
+Report issues: https://github.com/hizkifw/HeartOSC/issues
+
+Made with ❤️ for the VRChat community

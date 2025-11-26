@@ -11,7 +11,7 @@ class HeartbeatPulseGenerator(
 ) {
     companion object {
         private const val TAG = "HeartbeatPulseGenerator"
-        private const val PULSE_DURATION_MS = 200L
+        private const val DEFAULT_PULSE_DURATION_MS = 200L
         private const val FRAME_DELAY_MS = 16L // ~60 FPS update rate
         private const val MIN_BPM = 30
         private const val MAX_BPM = 220
@@ -21,6 +21,9 @@ class HeartbeatPulseGenerator(
 
     @Volatile
     private var currentBpm: Int = 0
+
+    @Volatile
+    private var pulseDurationMs: Long = DEFAULT_PULSE_DURATION_MS
 
     @Volatile
     private var nextPulseTime: Long = 0L
@@ -57,7 +60,7 @@ class HeartbeatPulseGenerator(
                     toggleValue = !toggleValue
                     _toggleState.value = toggleValue
                     _pulseState.value = true
-                    pulseEndTime = now + PULSE_DURATION_MS
+                    pulseEndTime = now + pulseDurationMs
 
                     // Calculate next pulse time based on current pulse time
                     nextPulseTime += intervalMs
@@ -138,6 +141,11 @@ class HeartbeatPulseGenerator(
 
     fun getCurrentBpm(): Int {
         return currentBpm
+    }
+
+    fun setPulseDuration(durationMs: Long) {
+        pulseDurationMs = durationMs.coerceAtLeast(1L) // Minimum 1ms
+        Log.d(TAG, "Pulse duration set to ${pulseDurationMs}ms")
     }
 
     fun cleanup() {

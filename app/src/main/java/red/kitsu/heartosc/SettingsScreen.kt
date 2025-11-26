@@ -25,6 +25,7 @@ fun SettingsScreen(
     val hrConnectedParam by viewModel.hrConnectedParam.collectAsState()
     val heartbeatToggleParam by viewModel.heartbeatToggleParam.collectAsState()
     val heartbeatPulseParam by viewModel.heartbeatPulseParam.collectAsState()
+    val heartbeatPulseDuration by viewModel.heartbeatPulseDuration.collectAsState()
 
     var hostText by remember(oscHost) { mutableStateOf(oscHost) }
     var portText by remember(oscPort) { mutableStateOf(oscPort.toString()) }
@@ -32,6 +33,7 @@ fun SettingsScreen(
     var hrConnectedParamText by remember(hrConnectedParam) { mutableStateOf(hrConnectedParam) }
     var heartbeatToggleParamText by remember(heartbeatToggleParam) { mutableStateOf(heartbeatToggleParam) }
     var heartbeatPulseParamText by remember(heartbeatPulseParam) { mutableStateOf(heartbeatPulseParam) }
+    var heartbeatPulseDurationText by remember(heartbeatPulseDuration) { mutableStateOf(heartbeatPulseDuration.toString()) }
 
     Scaffold(
         topBar = {
@@ -186,6 +188,29 @@ fun SettingsScreen(
                 modifier = Modifier.padding(start = 16.dp)
             )
 
+            OutlinedTextField(
+                value = heartbeatPulseDurationText,
+                onValueChange = {
+                    if (it.isEmpty() || it.all { char -> char.isDigit() }) {
+                        heartbeatPulseDurationText = it
+                    }
+                },
+                label = { Text(stringResource(R.string.label_pulse_duration)) },
+                placeholder = { Text(SettingsManager.DEFAULT_HEARTBEAT_PULSE_DURATION.toString()) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = heartbeatPulseDurationText.isNotEmpty() && (heartbeatPulseDurationText.toIntOrNull() == null ||
+                         heartbeatPulseDurationText.toInt() !in 1..5000)
+            )
+
+            Text(
+                text = stringResource(R.string.help_pulse_duration),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier.padding(start = 16.dp)
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
@@ -199,6 +224,10 @@ fun SettingsScreen(
                     viewModel.setHrConnectedParam(hrConnectedParamText)
                     viewModel.setHeartbeatToggleParam(heartbeatToggleParamText)
                     viewModel.setHeartbeatPulseParam(heartbeatPulseParamText)
+                    val pulseDuration = heartbeatPulseDurationText.toIntOrNull()
+                    if (pulseDuration != null && pulseDuration in 1..5000) {
+                        viewModel.setHeartbeatPulseDuration(pulseDuration)
+                    }
                     onBackPressed()
                 },
                 enabled = hostText.isNotBlank() &&
@@ -207,7 +236,9 @@ fun SettingsScreen(
                          hrParamText.isNotBlank() &&
                          hrConnectedParamText.isNotBlank() &&
                          heartbeatToggleParamText.isNotBlank() &&
-                         heartbeatPulseParamText.isNotBlank(),
+                         heartbeatPulseParamText.isNotBlank() &&
+                         heartbeatPulseDurationText.isNotEmpty() &&
+                         heartbeatPulseDurationText.toIntOrNull()?.let { it in 1..5000 } == true,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.common_save))
@@ -221,6 +252,7 @@ fun SettingsScreen(
                     hrConnectedParamText = SettingsManager.DEFAULT_HR_CONNECTED_PARAM
                     heartbeatToggleParamText = SettingsManager.DEFAULT_HEARTBEAT_TOGGLE_PARAM
                     heartbeatPulseParamText = SettingsManager.DEFAULT_HEARTBEAT_PULSE_PARAM
+                    heartbeatPulseDurationText = SettingsManager.DEFAULT_HEARTBEAT_PULSE_DURATION.toString()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

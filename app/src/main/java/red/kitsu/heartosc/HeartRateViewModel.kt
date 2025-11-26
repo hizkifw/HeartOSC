@@ -40,6 +40,7 @@ class HeartRateViewModel(application: Application) : AndroidViewModel(applicatio
     val hrConnectedParam = settingsManager.hrConnectedParam
     val heartbeatToggleParam = settingsManager.heartbeatToggleParam
     val heartbeatPulseParam = settingsManager.heartbeatPulseParam
+    val heartbeatPulseDuration = settingsManager.heartbeatPulseDuration
 
     // Expose pulse state for UI
     val heartbeatPulse = pulseGenerator.pulseState
@@ -106,6 +107,13 @@ class HeartRateViewModel(application: Application) : AndroidViewModel(applicatio
                 }
             }
         }
+
+        // Monitor pulse duration changes and update pulse generator
+        viewModelScope.launch {
+            heartbeatPulseDuration.collect { duration ->
+                pulseGenerator.setPulseDuration(duration.toLong())
+            }
+        }
     }
 
     fun checkPermissions(): Boolean {
@@ -166,6 +174,10 @@ class HeartRateViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun setHeartbeatPulseParam(param: String) {
         settingsManager.setHeartbeatPulseParam(param)
+    }
+
+    fun setHeartbeatPulseDuration(duration: Int) {
+        settingsManager.setHeartbeatPulseDuration(duration)
     }
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])

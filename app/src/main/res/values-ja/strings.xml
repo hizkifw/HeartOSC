@@ -97,6 +97,7 @@
     <string name="label_hr_connected_parameter">心拍計接続パラメータ</string>
     <string name="label_heartbeat_toggle_parameter">心拍トグルパラメータ</string>
     <string name="label_heartbeat_pulse_parameter">心拍パルスパラメータ</string>
+    <string name="label_pulse_duration">パルス持続時間（ミリ秒）</string>
 
     <!-- Helper Text -->
     <string name="help_osc_host">OSCサーバーのIPアドレスまたはホスト名</string>
@@ -105,6 +106,7 @@
     <string name="help_hr_connected_parameter">心拍計接続状態のOSCパス（真偽値）</string>
     <string name="help_heartbeat_toggle_parameter">心拍トグル状態のOSCパス（真偽値）</string>
     <string name="help_heartbeat_pulse_parameter">心拍パルス状態のOSCパス（真偽値）</string>
+    <string name="help_pulse_duration">各心拍パルスの持続時間（ミリ秒単位、1-5000）</string>
 
     <!-- Buttons -->
     <string name="button_reset_defaults">デフォルトに戻す</string>

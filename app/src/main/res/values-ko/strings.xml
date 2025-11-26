@@ -97,6 +97,7 @@
     <string name="label_hr_connected_parameter">심박수 연결 매개변수</string>
     <string name="label_heartbeat_toggle_parameter">심박 토글 매개변수</string>
     <string name="label_heartbeat_pulse_parameter">심박 펄스 매개변수</string>
+    <string name="label_pulse_duration">펄스 지속 시간 (밀리초)</string>
 
     <!-- Helper Text -->
     <string name="help_osc_host">OSC 서버의 IP 주소 또는 호스트 이름</string>
@@ -105,6 +106,7 @@
     <string name="help_hr_connected_parameter">심박수 모니터 연결 상태의 OSC 경로 (부울)</string>
     <string name="help_heartbeat_toggle_parameter">심박 토글 상태의 OSC 경로 (부울)</string>
     <string name="help_heartbeat_pulse_parameter">심박 펄스 상태의 OSC 경로 (부울)</string>
+    <string name="help_pulse_duration">각 심박 펄스의 지속 시간 (밀리초 단위, 1-5000)</string>
 
     <!-- Buttons -->
     <string name="button_reset_defaults">기본값으로 재설정</string>
