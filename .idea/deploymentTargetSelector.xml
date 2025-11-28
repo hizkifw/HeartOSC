@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-11-26T13:24:55.511404513Z">
+        <DropdownSelection timestamp="2025-11-28T13:47:48.625679536Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/home/kitsune/.config/.android/avd/7_WSVGA_Tablet.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/kitsune/.config/.android/avd/Medium_Phone.avd" />
             </handle>
           </Target>
         </DropdownSelection>
