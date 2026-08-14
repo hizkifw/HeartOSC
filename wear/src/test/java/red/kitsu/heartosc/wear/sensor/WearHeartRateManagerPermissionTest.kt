@@ -14,8 +14,16 @@ class WearHeartRateManagerPermissionTest {
     }
 
     @Test
+    fun testHealthReadHealthDataInBackgroundPermissionConstant() {
+        assertEquals(
+            "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND",
+            WearHeartRateManager.PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND
+        )
+    }
+
+    @Test
     fun testHasHealthReadHeartRatePermissionReturnsFalseOnLowApi() {
-        val isLowApi = android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+        val isLowApi = android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.BAKLAVA
         if (isLowApi) {
             val dummyContext = object : android.content.ContextWrapper(null) {}
             val result = WearHeartRateManager.hasHealthReadHeartRatePermission(dummyContext)

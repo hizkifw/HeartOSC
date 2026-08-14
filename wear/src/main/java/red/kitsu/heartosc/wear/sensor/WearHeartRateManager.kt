@@ -24,6 +24,7 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
     companion object {
         private const val TAG = "WearHeartRateManager"
         const val PERMISSION_HEALTH_READ_HEART_RATE = "android.permission.health.READ_HEART_RATE"
+        const val PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND = "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"
 
         fun hasBodySensorsPermission(context: Context): Boolean {
             return ContextCompat.checkSelfPermission(
@@ -33,7 +34,7 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
         }
 
         fun hasHealthReadHeartRatePermission(context: Context): Boolean {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
                 ContextCompat.checkSelfPermission(
                     context,
                     PERMISSION_HEALTH_READ_HEART_RATE
@@ -44,7 +45,11 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
         }
 
         fun hasHealthServicesPermissions(context: Context): Boolean {
-            return hasBodySensorsPermission(context) || hasHealthReadHeartRatePermission(context)
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                hasBodySensorsPermission(context) || hasHealthReadHeartRatePermission(context)
+            } else {
+                hasBodySensorsPermission(context)
+            }
         }
     }
 

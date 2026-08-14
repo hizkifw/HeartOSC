@@ -36,12 +36,13 @@ class WearMainActivity : ComponentActivity() {
     companion object {
         private const val TAG = "WearMainActivity"
         const val PERMISSION_HEALTH_READ_HEART_RATE = "android.permission.health.READ_HEART_RATE"
+        const val PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND = "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"
     }
 
-    private val requestBackgroundPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        Log.d(TAG, "BODY_SENSORS_BACKGROUND permission granted: $isGranted")
+    private val requestBackgroundPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        Log.d(TAG, "Background permissions results: $results")
         // Start service even if background permission isn't fully granted, but log outcome
         startHeartRateService()
     }
@@ -52,16 +53,17 @@ class WearMainActivity : ComponentActivity() {
         val bodySensorsGranted = permissions[Manifest.permission.BODY_SENSORS] ?: (
             ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED
         )
-        val healthGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            permissions[PERMISSION_HEALTH_READ_HEART_RATE] ?: (
+        val hasForegroundPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            val healthGranted = permissions[PERMISSION_HEALTH_READ_HEART_RATE] ?: (
                 ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEART_RATE) == PackageManager.PERMISSION_GRANTED
             )
+            bodySensorsGranted || healthGranted
         } else {
-            false
+            bodySensorsGranted
         }
 
-        Log.d(TAG, "Foreground permissions result: bodySensors=$bodySensorsGranted, health=$healthGranted")
-        if (bodySensorsGranted || healthGranted) {
+        Log.d(TAG, "Foreground permissions result: hasForegroundPermission=$hasForegroundPermission (bodySensors=$bodySensorsGranted)")
+        if (hasForegroundPermission) {
             checkAndRequestBackgroundPermission()
         } else {
             Log.w(TAG, "Required sensor permissions denied by user")
@@ -200,18 +202,19 @@ class WearMainActivity : ComponentActivity() {
 
     private fun checkAndRequestForegroundPermissions() {
         val hasBodySensors = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED
-        val hasHealthRead = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEART_RATE) == PackageManager.PERMISSION_GRANTED
+        val hasForegroundPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            val hasHealthRead = ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEART_RATE) == PackageManager.PERMISSION_GRANTED
+            hasBodySensors || hasHealthRead
         } else {
-            false
+            hasBodySensors
         }
 
-        if (hasBodySensors || hasHealthRead) {
+        if (hasForegroundPermission) {
             checkAndRequestBackgroundPermission()
         } else {
             val missingPermissions = mutableListOf<String>()
             missingPermissions.add(Manifest.permission.BODY_SENSORS)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
                 missingPermissions.add(PERMISSION_HEALTH_READ_HEART_RATE)
             }
             requestForegroundPermissionsLauncher.launch(missingPermissions.toTypedArray())
@@ -219,14 +222,33 @@ class WearMainActivity : ComponentActivity() {
     }
 
     private fun checkAndRequestBackgroundPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            val missingBackgroundPermissions = mutableListOf<String>()
+            if (ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND) != PackageManager.PERMISSION_GRANTED) {
+                missingBackgroundPermissions.add(PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND)
+            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) != PackageManager.PERMISSION_GRANTED) {
+                missingBackgroundPermissions.add(Manifest.permission.BODY_SENSORS_BACKGROUND)
+            }
+
+            if (missingBackgroundPermissions.isEmpty()) {
+                startHeartRateService()
+            } else {
+                try {
+                    requestBackgroundPermissionsLauncher.launch(missingBackgroundPermissions.toTypedArray())
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to launch background permissions launcher, starting service with foreground sensor permission", e)
+                    startHeartRateService()
+                }
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val hasBodySensors = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED
             if (hasBodySensors) {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) == PackageManager.PERMISSION_GRANTED) {
                     startHeartRateService()
                 } else {
                     try {
-                        requestBackgroundPermissionLauncher.launch(Manifest.permission.BODY_SENSORS_BACKGROUND)
+                        requestBackgroundPermissionsLauncher.launch(arrayOf(Manifest.permission.BODY_SENSORS_BACKGROUND))
                     } catch (e: Exception) {
                         Log.w(TAG, "Failed to launch BODY_SENSORS_BACKGROUND launcher, starting service with foreground sensor permission", e)
                         startHeartRateService()
