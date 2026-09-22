@@ -241,24 +241,16 @@ class WearMainActivity : ComponentActivity() {
                     startHeartRateService()
                 }
             }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val hasBodySensors = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED
-            if (hasBodySensors) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) == PackageManager.PERMISSION_GRANTED) {
-                    startHeartRateService()
-                } else {
-                    try {
-                        requestBackgroundPermissionsLauncher.launch(arrayOf(Manifest.permission.BODY_SENSORS_BACKGROUND))
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Failed to launch BODY_SENSORS_BACKGROUND launcher, starting service with foreground sensor permission", e)
-                        startHeartRateService()
-                    }
-                }
-            } else {
-                startHeartRateService()
-            }
         } else {
+            // On Wear OS 4/5 (API 33-35), BODY_SENSORS_BACKGROUND cannot be granted via runtime dialog.
+            // Start the foreground service immediately using the granted foreground BODY_SENSORS permission.
             startHeartRateService()
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) != PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.i(TAG, "BODY_SENSORS_BACKGROUND not granted; continuous tracking with screen off may require 'Allow all the time' in Settings")
+            }
         }
     }
 
