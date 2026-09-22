@@ -4,8 +4,10 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -39,11 +41,34 @@ class WearMainActivity : ComponentActivity() {
         const val PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND = "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"
     }
 
+    private var hasBackgroundPermission by mutableStateOf(true)
+
+    private fun updateBackgroundPermissionState() {
+        hasBackgroundPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+            val bgSensors = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) == PackageManager.PERMISSION_GRANTED
+            val bgHealth = ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND) == PackageManager.PERMISSION_GRANTED
+            bgSensors || bgHealth
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
     private val requestBackgroundPermissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         Log.d(TAG, "Background permissions results: $results")
-        // Start service even if background permission isn't fully granted, but log outcome
+        updateBackgroundPermissionState()
+        if (!hasBackgroundPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Log.i(TAG, "Background sensor permission not granted; continuous tracking with screen off may require 'Allow all the time' in Settings")
+            Toast.makeText(
+                this,
+                "For tracking with screen off, set Sensors to 'Allow all the time' in Settings",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        // Start service even if background permission isn't fully granted, using foreground sensor permission
         startHeartRateService()
     }
 
@@ -79,6 +104,7 @@ class WearMainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        updateBackgroundPermissionState()
 
         // Keep screen awake while active in UI
         window.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -169,6 +195,20 @@ class WearMainActivity : ComponentActivity() {
                                     color = if (isMonitoring) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onPrimary
                                 )
                             }
+
+                            if (!hasBackgroundPermission) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                TextButton(
+                                    onClick = { openAppSettings() },
+                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                                ) {
+                                    Text(
+                                        text = "Settings",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.tertiary
+                                    )
+                                }
+                            }
                         }
 
                         if (isDimmed) {
@@ -189,6 +229,11 @@ class WearMainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateBackgroundPermissionState()
     }
 
     private fun checkAndStartMonitoringFlow() {
@@ -237,20 +282,42 @@ class WearMainActivity : ComponentActivity() {
                 try {
                     requestBackgroundPermissionsLauncher.launch(missingBackgroundPermissions.toTypedArray())
                 } catch (e: Exception) {
-                    Log.w(TAG, "Failed to launch background permissions launcher, starting service with foreground sensor permission", e)
+                    Log.w(TAG, "Failed to launch background permissions launcher, opening settings", e)
+                    openAppSettings()
+                    startHeartRateService()
+                }
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasBgPermission = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BODY_SENSORS_BACKGROUND
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (hasBgPermission) {
+                startHeartRateService()
+            } else {
+                try {
+                    requestBackgroundPermissionsLauncher.launch(arrayOf(Manifest.permission.BODY_SENSORS_BACKGROUND))
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to launch BODY_SENSORS_BACKGROUND launcher, opening settings", e)
+                    openAppSettings()
                     startHeartRateService()
                 }
             }
         } else {
-            // On Wear OS 4/5 (API 33-35), BODY_SENSORS_BACKGROUND cannot be granted via runtime dialog.
-            // Start the foreground service immediately using the granted foreground BODY_SENSORS permission.
             startHeartRateService()
+        }
+    }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.i(TAG, "BODY_SENSORS_BACKGROUND not granted; continuous tracking with screen off may require 'Allow all the time' in Settings")
+    private fun openAppSettings() {
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.fromParts("package", packageName, null)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to open application details settings", e)
         }
     }
 
