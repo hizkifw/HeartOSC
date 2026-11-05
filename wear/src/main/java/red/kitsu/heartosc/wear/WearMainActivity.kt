@@ -26,6 +26,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -42,6 +43,7 @@ class WearMainActivity : ComponentActivity() {
     }
 
     private var hasBackgroundPermission by mutableStateOf(true)
+    private var hasShownBackgroundPermissionHint = false
 
     private fun updateBackgroundPermissionState() {
         hasBackgroundPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
@@ -62,6 +64,11 @@ class WearMainActivity : ComponentActivity() {
         updateBackgroundPermissionState()
         if (!hasBackgroundPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Log.i(TAG, "Background sensor permission not granted; continuous tracking with screen off may require 'Allow all the time' in Settings")
+        }
+        // The Settings button stays visible; only show the explanation once per session.
+        if (!hasBackgroundPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            !hasShownBackgroundPermissionHint) {
+            hasShownBackgroundPermissionHint = true
             Toast.makeText(
                 this,
                 "For tracking with screen off, set Sensors to 'Allow all the time' in Settings",
@@ -113,6 +120,7 @@ class WearMainActivity : ComponentActivity() {
             WearHeartOSCTheme {
                 val isMonitoring by WearHeartRateService.isRunning.collectAsState()
                 val currentBpm by WearHeartRateService.currentBpm.collectAsState()
+                val sensorStatus by WearHeartRateService.sensorStatus.collectAsState()
 
                 var isDimmed by remember { mutableStateOf(false) }
                 var interactionCount by remember { mutableIntStateOf(0) }
@@ -176,6 +184,23 @@ class WearMainActivity : ComponentActivity() {
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                             )
+                            val statusText = when {
+                                !isMonitoring || currentBpm > 0 -> null
+                                sensorStatus == WearHeartRateManager.Status.NO_DATA ->
+                                    "No reading. Check watch fit."
+                                sensorStatus == WearHeartRateManager.Status.UNAVAILABLE ->
+                                    "Sensor unavailable. Check permissions."
+                                else -> "Measuring..."
+                            }
+                            if (statusText != null) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = statusText,
+                                    fontSize = 11.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                )
+                            }
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(
                                 onClick = {

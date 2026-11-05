@@ -23,6 +23,7 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
 
     companion object {
         private const val TAG = "WearHeartRateManager"
+        private const val NO_DATA_TIMEOUT_MS = 20_000L
         const val PERMISSION_HEALTH_READ_HEART_RATE = "android.permission.health.READ_HEART_RATE"
         const val PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND = "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"
 
@@ -53,9 +54,20 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
         }
     }
 
+    enum class Status {
+        IDLE,
+        WAITING,
+        MEASURING,
+        NO_DATA,
+        UNAVAILABLE
+    }
+
     private var onBpmListener: ((Int) -> Unit)? = null
+    private var onStatusListener: ((Status) -> Unit)? = null
     @Volatile
     private var isTracking = false
+    private var hasReceivedData = false
+    private var watchdogJob: Job? = null
 
     // Health Services (Primary for Wear OS 3+ / One UI Watch)
     private val healthServicesClient by lazy { HealthServices.getClient(context) }
@@ -89,7 +101,7 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
                 val bpm = point.value.toInt()
                 if (bpm > 0) {
                     Log.d(TAG, "HealthServices HR BPM: $bpm")
-                    onBpmListener?.invoke(bpm)
+                    deliverBpm(bpm)
                 }
             }
         }
@@ -102,10 +114,13 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
         }
     }
 
-    fun start(onBpm: (Int) -> Unit) {
+    fun start(onBpm: (Int) -> Unit, onStatus: (Status) -> Unit = {}) {
         if (isTracking) return
         isTracking = true
+        hasReceivedData = false
         onBpmListener = onBpm
+        onStatusListener = onStatus
+        setStatus(Status.WAITING)
 
         startJob?.cancel()
         startJob = scope.launch {
@@ -123,13 +138,19 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
                             measureCallback
                         )
                         isUsingHealthServices = true
+                        scheduleNoDataWatchdog()
                         return@launch
                     } else {
                         Log.w(TAG, "HEART_RATE_BPM not supported in measureClient capabilities")
                     }
                 } catch (e: CancellationException) {
-                    Log.d(TAG, "HealthServices registration cancelled")
-                    return@launch
+                    // Either stop() cancelled this job, or the Health Services future itself was
+                    // cancelled (e.g. the service is unavailable). Only the former should abort.
+                    if (!isActive) {
+                        Log.d(TAG, "HealthServices registration cancelled")
+                        return@launch
+                    }
+                    Log.w(TAG, "HealthServices request was cancelled, falling back to SensorManager", e)
                 } catch (e: SecurityException) {
                     Log.w(TAG, "SecurityException registering HealthServices, falling back to SensorManager", e)
                 } catch (e: Throwable) {
@@ -145,25 +166,96 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
         }
     }
 
+    private fun setStatus(status: Status) {
+        onStatusListener?.invoke(status)
+    }
+
+    private fun deliverBpm(bpm: Int) {
+        if (!hasReceivedData) {
+            hasReceivedData = true
+            watchdogJob?.cancel()
+            watchdogJob = null
+            setStatus(Status.MEASURING)
+        }
+        onBpmListener?.invoke(bpm)
+    }
+
+    /**
+     * If the active source has not produced a reading within [NO_DATA_TIMEOUT_MS], switch from
+     * Health Services to SensorManager (when possible), or report [Status.NO_DATA].
+     */
+    private fun scheduleNoDataWatchdog() {
+        watchdogJob?.cancel()
+        watchdogJob = scope.launch {
+            delay(NO_DATA_TIMEOUT_MS)
+            if (!isTracking || hasReceivedData) return@launch
+            if (isUsingHealthServices && canUseSensorManagerFallback()) {
+                Log.w(TAG, "No Health Services data after ${NO_DATA_TIMEOUT_MS}ms, falling back to SensorManager")
+                unregisterHealthServices()
+                startSensorManagerFallback()
+            } else {
+                Log.w(TAG, "No heart rate data received after ${NO_DATA_TIMEOUT_MS}ms")
+                setStatus(Status.NO_DATA)
+            }
+        }
+    }
+
+    private fun canUseSensorManagerFallback(): Boolean {
+        return hasBodySensorsPermission(context) &&
+            sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE) != null
+    }
+
     private fun startSensorManagerFallback() {
         isUsingHealthServices = false
+        watchdogJob?.cancel()
+        watchdogJob = null
         if (!hasBodySensorsPermission(context)) {
             Log.e(TAG, "Cannot start SensorManager fallback: BODY_SENSORS permission not granted")
+            setStatus(Status.UNAVAILABLE)
             return
         }
         try {
-            heartRateSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)
-            heartRateSensor?.let { sensor ->
-                if (!isTracking) return
-                sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
-                Log.d(TAG, "Started tracking with legacy SensorManager")
-            } ?: run {
+            val sensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)
+            if (sensor == null) {
                 Log.e(TAG, "No heart rate sensor available on device")
+                setStatus(Status.UNAVAILABLE)
+                return
             }
+            if (!isTracking) return
+            heartRateSensor = sensor
+            if (!sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)) {
+                Log.e(TAG, "SensorManager rejected heart rate listener registration")
+                setStatus(Status.UNAVAILABLE)
+                return
+            }
+            Log.d(TAG, "Started tracking with legacy SensorManager")
+            scheduleNoDataWatchdog()
         } catch (e: SecurityException) {
             Log.e(TAG, "SecurityException starting legacy SensorManager listener", e)
+            setStatus(Status.UNAVAILABLE)
         } catch (e: Exception) {
             Log.e(TAG, "Error starting legacy SensorManager listener", e)
+            setStatus(Status.UNAVAILABLE)
+        }
+    }
+
+    private fun unregisterHealthServices() {
+        if (!isUsingHealthServices) return
+        isUsingHealthServices = false
+        unregisterJob = scope.launch {
+            try {
+                measureClient.unregisterMeasureCallbackAsync(
+                    DataType.HEART_RATE_BPM,
+                    measureCallback
+                ).await()
+                Log.d(TAG, "Unregistered MeasureClient callback")
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: SecurityException) {
+                Log.e(TAG, "SecurityException unregistering MeasureClient callback", e)
+            } catch (e: Throwable) {
+                Log.e(TAG, "Error unregistering MeasureClient callback", e)
+            }
         }
     }
 
@@ -173,25 +265,10 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
 
         startJob?.cancel()
         startJob = null
+        watchdogJob?.cancel()
+        watchdogJob = null
 
-        if (isUsingHealthServices) {
-            isUsingHealthServices = false
-            unregisterJob = scope.launch {
-                try {
-                    measureClient.unregisterMeasureCallbackAsync(
-                        DataType.HEART_RATE_BPM,
-                        measureCallback
-                    ).await()
-                    Log.d(TAG, "Unregistered MeasureClient callback")
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: SecurityException) {
-                    Log.e(TAG, "SecurityException unregistering MeasureClient callback", e)
-                } catch (e: Throwable) {
-                    Log.e(TAG, "Error unregistering MeasureClient callback", e)
-                }
-            }
-        }
+        unregisterHealthServices()
 
         try {
             sensorManager.unregisterListener(this)
@@ -202,6 +279,7 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
             Log.e(TAG, "Error unregistering legacy SensorManager listener", e)
         }
         onBpmListener = null
+        onStatusListener = null
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -210,7 +288,7 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
                 val bpm = event.values[0].toInt()
                 if (bpm > 0) {
                     Log.d(TAG, "SensorManager HR BPM: $bpm")
-                    onBpmListener?.invoke(bpm)
+                    deliverBpm(bpm)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error processing sensor event", e)
