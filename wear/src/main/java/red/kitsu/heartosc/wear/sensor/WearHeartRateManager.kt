@@ -71,6 +71,17 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
     private var unregisterJob: Job? = null
 
     private val measureCallback = object : MeasureCallback {
+        override fun onRegistered() {
+            Log.d(TAG, "MeasureClient callback successfully registered")
+        }
+
+        override fun onRegistrationFailed(throwable: Throwable) {
+            Log.e(TAG, "MeasureClient registration failed asynchronously, falling back to SensorManager", throwable)
+            if (!isTracking) return
+            isUsingHealthServices = false
+            startSensorManagerFallback()
+        }
+
         override fun onDataReceived(data: DataPointContainer) {
             if (!isTracking) return
             val points = data.getData(DataType.HEART_RATE_BPM)
@@ -144,7 +155,7 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
             heartRateSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)
             heartRateSensor?.let { sensor ->
                 if (!isTracking) return
-                sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST)
+                sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
                 Log.d(TAG, "Started tracking with legacy SensorManager")
             } ?: run {
                 Log.e(TAG, "No heart rate sensor available on device")
