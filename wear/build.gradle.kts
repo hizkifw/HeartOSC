@@ -13,8 +13,8 @@ android {
         minSdk = 26
         targetSdk = 35
         // Keep Wear releases in a separate range from the phone APK.
-        versionCode = 1_000_006
-        versionName = "1.3.0"
+        versionCode = 1_000_007
+        versionName = "1.3.1"
     }
 
     buildTypes {
