@@ -12,6 +12,7 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.wearable.Wearable
@@ -29,6 +30,7 @@ class WearHeartRateService : Service() {
         private const val NOTIFICATION_ID = 2001
         private const val CHANNEL_ID = "wear_heart_rate_channel"
         private const val WEAR_PATH_HR = "/heartrate"
+        private const val NODE_CACHE_TTL_MS = 30_000L
 
         const val ACTION_START = "red.kitsu.heartosc.wear.ACTION_START"
         const val ACTION_STOP = "red.kitsu.heartosc.wear.ACTION_STOP"
@@ -38,11 +40,19 @@ class WearHeartRateService : Service() {
 
         private val _currentBpm = MutableStateFlow(0)
         val currentBpm: StateFlow<Int> = _currentBpm.asStateFlow()
+
+        private val _sensorStatus = MutableStateFlow(WearHeartRateManager.Status.IDLE)
+        val sensorStatus: StateFlow<WearHeartRateManager.Status> = _sensorStatus.asStateFlow()
     }
 
     private val binder = LocalBinder()
     private var wakeLock: PowerManager.WakeLock? = null
     private var sensorManager: WearHeartRateManager? = null
+
+    // Cached companion node IDs so we don't query connected nodes for every BPM sample.
+    private var cachedNodeIds: List<String> = emptyList()
+    private var nodesFetchedAtMs = 0L
+    private var nodeRefreshInFlight = false
 
     inner class LocalBinder : Binder() {
         fun getService(): WearHeartRateService = this@WearHeartRateService
@@ -64,8 +74,15 @@ class WearHeartRateService : Service() {
         when (intent?.action) {
             ACTION_START -> startForegroundTracking()
             ACTION_STOP -> stopForegroundTracking()
+            else -> {
+                // Not started by us with an action (e.g. a stale restart). A health foreground
+                // service can't be resumed from the background, so don't linger idle.
+                if (!_isRunning.value) stopSelf(startId)
+            }
         }
-        return START_STICKY
+        // Tracking is always started explicitly from the activity; don't let the system
+        // recreate the service in a half-started state after the process is killed.
+        return START_NOT_STICKY
     }
 
     private fun startForegroundTracking() {
@@ -95,11 +112,14 @@ class WearHeartRateService : Service() {
 
         acquireWakeLock()
 
-        sensorManager?.start { bpm ->
-            _currentBpm.value = bpm
-            updateNotification(bpm)
-            sendHeartRateToPhone(bpm)
-        }
+        sensorManager?.start(
+            onBpm = { bpm ->
+                _currentBpm.value = bpm
+                updateNotification(bpm)
+                sendHeartRateToPhone(bpm)
+            },
+            onStatus = { status -> _sensorStatus.value = status }
+        )
         Log.d(TAG, "Started foreground tracking on Wear OS")
     }
 
@@ -111,6 +131,8 @@ class WearHeartRateService : Service() {
 
         _isRunning.value = false
         _currentBpm.value = 0
+        _sensorStatus.value = WearHeartRateManager.Status.IDLE
+        cachedNodeIds = emptyList()
         try {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } catch (e: Exception) {
@@ -152,20 +174,42 @@ class WearHeartRateService : Service() {
     private fun sendHeartRateToPhone(bpm: Int) {
         if (!_isRunning.value) return
         val payload = ByteBuffer.allocate(4).putInt(bpm).array()
-        Wearable.getNodeClient(this).connectedNodes.addOnSuccessListener { nodes ->
-            if (!_isRunning.value) return@addOnSuccessListener
-            val messageClient = Wearable.getMessageClient(this)
-            for (node in nodes) {
-                messageClient.sendMessage(node.id, WEAR_PATH_HR, payload)
-                    .addOnSuccessListener {
-                        Log.d(TAG, "Sent BPM $bpm to companion node: ${node.displayName}")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e(TAG, "Failed sending BPM to node ${node.displayName}", e)
-                    }
+
+        val cacheFresh = SystemClock.elapsedRealtime() - nodesFetchedAtMs < NODE_CACHE_TTL_MS
+        if (cachedNodeIds.isNotEmpty() && cacheFresh) {
+            sendToNodes(cachedNodeIds, payload, bpm)
+            return
+        }
+
+        // Drop this sample if a lookup is already running; the next one (~1s later) will go out.
+        if (nodeRefreshInFlight) return
+        nodeRefreshInFlight = true
+        Wearable.getNodeClient(this).connectedNodes
+            .addOnSuccessListener { nodes ->
+                cachedNodeIds = nodes.map { it.id }
+                nodesFetchedAtMs = SystemClock.elapsedRealtime()
+                if (_isRunning.value) sendToNodes(cachedNodeIds, payload, bpm)
             }
-        }.addOnFailureListener { e ->
-            Log.e(TAG, "Failed getting connected nodes", e)
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Failed getting connected nodes", e)
+            }
+            .addOnCompleteListener {
+                nodeRefreshInFlight = false
+            }
+    }
+
+    private fun sendToNodes(nodeIds: List<String>, payload: ByteArray, bpm: Int) {
+        val messageClient = Wearable.getMessageClient(this)
+        for (nodeId in nodeIds) {
+            messageClient.sendMessage(nodeId, WEAR_PATH_HR, payload)
+                .addOnSuccessListener {
+                    Log.d(TAG, "Sent BPM $bpm to companion node: $nodeId")
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Failed sending BPM to node $nodeId", e)
+                    // Node may have disconnected; force a fresh lookup on the next sample.
+                    cachedNodeIds = emptyList()
+                }
         }
     }
 
