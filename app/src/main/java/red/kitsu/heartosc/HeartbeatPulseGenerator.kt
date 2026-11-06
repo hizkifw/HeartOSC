@@ -92,7 +92,7 @@ class HeartbeatPulseGenerator(
         val validBpm = bpm.coerceIn(MIN_BPM, MAX_BPM)
 
         if (validBpm != bpm) {
-            Log.w(TAG, "BPM $bpm out of range, clamped to $validBpm")
+            Log.w(TAG, "BPM out of range, clamped")
         }
 
         val now = System.currentTimeMillis()
