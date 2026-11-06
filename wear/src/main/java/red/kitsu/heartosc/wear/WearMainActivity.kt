@@ -47,9 +47,7 @@ class WearMainActivity : ComponentActivity() {
 
     private fun updateBackgroundPermissionState() {
         hasBackgroundPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-            val bgSensors = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) == PackageManager.PERMISSION_GRANTED
-            val bgHealth = ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND) == PackageManager.PERMISSION_GRANTED
-            bgSensors || bgHealth
+            ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND) == PackageManager.PERMISSION_GRANTED
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) == PackageManager.PERMISSION_GRANTED
         } else {
@@ -82,19 +80,9 @@ class WearMainActivity : ComponentActivity() {
     private val requestForegroundPermissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val bodySensorsGranted = permissions[Manifest.permission.BODY_SENSORS] ?: (
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED
-        )
-        val hasForegroundPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-            val healthGranted = permissions[PERMISSION_HEALTH_READ_HEART_RATE] ?: (
-                ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEART_RATE) == PackageManager.PERMISSION_GRANTED
-            )
-            bodySensorsGranted || healthGranted
-        } else {
-            bodySensorsGranted
-        }
+        val hasForegroundPermission = WearHeartRateManager.hasHeartRatePermission(this)
 
-        Log.d(TAG, "Foreground permissions result: hasForegroundPermission=$hasForegroundPermission (bodySensors=$bodySensorsGranted)")
+        Log.d(TAG, "Foreground permissions result: hasForegroundPermission=$hasForegroundPermission ($permissions)")
         if (hasForegroundPermission) {
             checkAndRequestBackgroundPermission()
         } else {
@@ -271,23 +259,16 @@ class WearMainActivity : ComponentActivity() {
     }
 
     private fun checkAndRequestForegroundPermissions() {
-        val hasBodySensors = ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_GRANTED
-        val hasForegroundPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-            val hasHealthRead = ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEART_RATE) == PackageManager.PERMISSION_GRANTED
-            hasBodySensors || hasHealthRead
-        } else {
-            hasBodySensors
-        }
-
-        if (hasForegroundPermission) {
+        if (WearHeartRateManager.hasHeartRatePermission(this)) {
             checkAndRequestBackgroundPermission()
         } else {
-            val missingPermissions = mutableListOf<String>()
-            missingPermissions.add(Manifest.permission.BODY_SENSORS)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-                missingPermissions.add(PERMISSION_HEALTH_READ_HEART_RATE)
+            // API 36+ only requests the new health permission; BODY_SENSORS is capped at maxSdkVersion=35.
+            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+                PERMISSION_HEALTH_READ_HEART_RATE
+            } else {
+                Manifest.permission.BODY_SENSORS
             }
-            requestForegroundPermissionsLauncher.launch(missingPermissions.toTypedArray())
+            requestForegroundPermissionsLauncher.launch(arrayOf(permission))
         }
     }
 
@@ -296,9 +277,6 @@ class WearMainActivity : ComponentActivity() {
             val missingBackgroundPermissions = mutableListOf<String>()
             if (ContextCompat.checkSelfPermission(this, PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND) != PackageManager.PERMISSION_GRANTED) {
                 missingBackgroundPermissions.add(PERMISSION_HEALTH_READ_HEALTH_DATA_IN_BACKGROUND)
-            }
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.BODY_SENSORS_BACKGROUND) != PackageManager.PERMISSION_GRANTED) {
-                missingBackgroundPermissions.add(Manifest.permission.BODY_SENSORS_BACKGROUND)
             }
 
             if (missingBackgroundPermissions.isEmpty()) {

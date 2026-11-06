@@ -45,13 +45,21 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
             }
         }
 
-        fun hasHealthServicesPermissions(context: Context): Boolean {
+        /**
+         * Foreground heart rate permission for the running platform version.
+         * API 36+ (Wear OS 6): health.READ_HEART_RATE. BODY_SENSORS is declared with
+         * maxSdkVersion=35, so it is never granted there.
+         * API <= 35: BODY_SENSORS.
+         */
+        fun hasHeartRatePermission(context: Context): Boolean {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
-                hasBodySensorsPermission(context) || hasHealthReadHeartRatePermission(context)
+                hasHealthReadHeartRatePermission(context)
             } else {
                 hasBodySensorsPermission(context)
             }
         }
+
+        fun hasHealthServicesPermissions(context: Context): Boolean = hasHeartRatePermission(context)
     }
 
     enum class Status {
@@ -201,7 +209,7 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
     }
 
     private fun canUseSensorManagerFallback(): Boolean {
-        return hasBodySensorsPermission(context) &&
+        return hasHeartRatePermission(context) &&
             sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE) != null
     }
 
@@ -209,8 +217,8 @@ class WearHeartRateManager(private val context: Context) : SensorEventListener {
         isUsingHealthServices = false
         watchdogJob?.cancel()
         watchdogJob = null
-        if (!hasBodySensorsPermission(context)) {
-            Log.e(TAG, "Cannot start SensorManager fallback: BODY_SENSORS permission not granted")
+        if (!hasHeartRatePermission(context)) {
+            Log.e(TAG, "Cannot start SensorManager fallback: heart rate permission (BODY_SENSORS / READ_HEART_RATE) not granted")
             setStatus(Status.UNAVAILABLE)
             return
         }
